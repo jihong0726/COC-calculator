@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COC 全景指挥舱 V6.0 - 全中文优化版</title>
+    <title>COC 全景指挥舱 V7.0 - 视觉实战版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        coco: { bg: '#090d15', card: '#131b2c', accent: '#3b82f6', purple: '#9333ea', green: '#16a34a', orange: '#d97706', red: '#dc2626', pink: '#db2777' }
+                        coco: { bg: '#090d15', card: '#131b2c', accent: '#3b82f6', purple: '#9333ea', green: '#16a34a', orange: '#d97706', red: '#dc2626', pink: '#db2777', cyan: '#06b6d4' }
                     }
                 }
             }
@@ -20,66 +20,57 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .progress-track { @apply h-2.5 bg-slate-800/80 rounded-full overflow-hidden shadow-inner; }
-            .progress-fill { @apply h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden; }
-            /* 进度条高光动画效果，对标高级工具 */
-            .progress-fill::after {
-                content: '';
-                @apply absolute top-0 left-0 bottom-0 w-full;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-                animation: shimmer 2s infinite;
-            }
-            @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-            
-            .level-tag { @apply px-2 py-0.5 rounded text-[11px] font-mono border whitespace-nowrap transition-all shadow-sm cursor-default; }
-            .tag-maxed { @apply bg-slate-800/80 text-slate-400 border-slate-700/80; } 
-            .tag-normal { @apply bg-slate-700 text-slate-200 border-slate-600; }
+            .progress-track { @apply h-2 bg-slate-800/80 rounded-full overflow-hidden shadow-inner; }
+            .progress-fill { @apply h-full rounded-full transition-all duration-1000 ease-out relative; }
+            .level-tag { @apply px-2 py-0.5 rounded text-[10px] font-mono border whitespace-nowrap; }
+            .tag-maxed { @apply bg-slate-800/80 text-slate-500 border-slate-700/80; } 
+            .tag-normal { @apply bg-slate-700/80 text-slate-300 border-slate-600; }
             .tag-lagging { @apply bg-orange-900/40 text-orange-400 border-orange-700/50; }
             .tag-critical { @apply bg-red-900/40 text-red-400 border-red-700/50; }
+            .glass { @apply bg-opacity-80 backdrop-blur-2xl border-slate-800/60 shadow-lg; }
             
-            .glass { @apply bg-opacity-80 backdrop-blur-2xl border-slate-800/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]; }
+            /* 建筑图标占位符及样式 */
+            .item-icon { @apply w-10 h-10 rounded-lg object-contain bg-slate-800/50 p-1 border border-slate-700/50 shrink-0; }
             
-            /* 动态网格，自动适应屏幕宽度 */
-            .auto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+            /* 动态网格，适应更多分类 */
+            .auto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
         }
     </style>
 </head>
-<body class="text-slate-200 p-4 md:p-6 lg:p-8 font-sans antialiased bg-coco-bg selection:bg-coco-accent selection:text-white min-h-screen">
+<body class="text-slate-200 p-4 md:p-6 lg:p-8 font-sans antialiased bg-coco-bg">
 
     <div class="max-w-[1600px] mx-auto">
         <header class="mb-8">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-700 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.6)]">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
                 </div>
                 <div>
-                    <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight">部落冲突 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">全景指挥舱</span></h1>
-                    <p class="text-xs text-slate-500 tracking-wider mt-1">V6.0 智能数据分析终端 | 目标：满级 TH18</p>
+                    <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight">部落冲突 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">全景指挥舱</span></h1>
+                    <p class="text-xs text-slate-400 tracking-wider mt-1">V7.0 视觉图鉴版 | 智能过滤冷板凳装备</p>
                 </div>
             </div>
             
             <div class="bg-coco-card border rounded-2xl p-4 shadow-xl flex flex-col md:flex-row gap-4 items-center glass">
-                <textarea id="jsonInput" class="w-full md:w-3/4 h-16 bg-slate-900/80 border border-slate-700/80 rounded-xl p-3 text-xs font-mono text-slate-400 focus:outline-none focus:border-coco-accent focus:ring-1 focus:ring-coco-accent transition-all resize-none" placeholder="在此粘贴导出的游戏 JSON 数据 (包含建筑、科技、法术等)..."></textarea>
+                <textarea id="jsonInput" class="w-full md:w-3/4 h-16 bg-slate-900 border border-slate-700/80 rounded-xl p-3 text-xs font-mono text-slate-400 focus:outline-none focus:border-coco-accent" placeholder="在此粘贴导出的 JSON 源码..."></textarea>
                 <div class="w-full md:w-1/4 space-y-2">
-                    <button id="btnAnalyze" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+                    <button id="btnAnalyze" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        <span>一键解析数据</span>
+                        <span>导入并解析</span>
                     </button>
-                    <div class="flex justify-between items-center text-[11px] font-bold px-1">
-                        <span id="playerTag" class="text-slate-500">等待导入...</span>
-                    </div>
+                    <div class="text-[11px] font-bold px-1 text-slate-500 text-center" id="playerTag">等待导入数据...</div>
                 </div>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
             <div class="lg:col-span-3 bg-coco-card rounded-3xl p-6 border relative shadow-xl overflow-hidden glass flex flex-col items-center justify-center">
-                <div class="absolute -top-16 -left-16 w-40 h-40 bg-blue-500/10 blur-[50px] rounded-full pointer-events-none"></div>
-                <h2 class="text-xs font-bold text-slate-400 mb-6 text-center w-full">综合加权总进度</h2>
-                <div class="relative w-full max-w-[150px] aspect-square">
+                <div class="absolute -top-16 -left-16 w-40 h-40 bg-blue-500/10 blur-[50px] rounded-full"></div>
+                <h2 class="text-xs font-bold text-slate-400 mb-4 text-center">综合战力总进度</h2>
+                <div class="relative w-full max-w-[140px] aspect-square">
                     <canvas id="overallChart"></canvas>
                     <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
-                        <span class="text-4xl font-black text-white tracking-tighter" id="overallText">0%</span>
+                        <span class="text-4xl font-black text-white" id="overallText">0%</span>
                     </div>
                 </div>
             </div>
@@ -87,129 +78,84 @@
             <div class="lg:col-span-6 bg-coco-card rounded-3xl p-6 border shadow-xl glass flex flex-col justify-center relative overflow-hidden">
                 <div class="absolute right-0 bottom-0 w-64 h-64 bg-red-500/5 blur-[80px] rounded-full pointer-events-none"></div>
                 <div class="flex items-center gap-2 mb-4">
-                    <span class="relative flex h-3 w-3">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                    </span>
-                    <h3 class="text-xs font-bold text-slate-300">智能诊断：当前最大瓶颈</h3>
+                    <span class="relative flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>
+                    <h3 class="text-xs font-bold text-slate-300 uppercase">Action Item (下一步推荐升级)</h3>
                 </div>
-                <h2 class="text-2xl md:text-3xl font-black text-white mb-3" id="insightTitle">请先导入数据</h2>
-                <p class="text-sm text-slate-400 leading-relaxed" id="insightDesc">系统将自动扫描你的五大防御与科技体系，找出严重拖后腿的设施或兵种，并提供精准的升级策略优先级建议。</p>
+                <div class="flex items-center gap-4">
+                    <img id="urgentIcon" src="https://placehold.co/100x100/1e293b/334155?text=..." class="w-16 h-16 rounded-xl border border-slate-700 bg-slate-800 object-contain p-1" alt="icon">
+                    <div>
+                        <h2 class="text-2xl md:text-3xl font-black text-white" id="insightTitle">等待解析...</h2>
+                        <p class="text-sm text-slate-400 mt-1" id="insightDesc">导入数据后，系统将锁定拖后腿最严重的防守核心。</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="lg:col-span-3 bg-coco-card rounded-3xl p-6 border-b-4 border-b-orange-500 shadow-xl glass flex flex-col justify-center">
-                <h3 class="text-xs font-bold text-slate-400 mb-3 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
-                    刷墙进度追踪
-                </h3>
-                <div class="flex items-baseline gap-1 mb-1">
-                    <span class="text-4xl font-black text-white" id="wallCount">--</span>
-                    <span class="text-sm text-slate-500 font-bold">块待刷</span>
+            <div class="lg:col-span-3 flex flex-col gap-4">
+                <div class="bg-coco-card rounded-2xl p-4 border-l-4 border-orange-500 shadow-xl glass flex-1 flex flex-col justify-center">
+                    <p class="text-[10px] font-bold text-slate-500 mb-1">墙块待刷 (Wall Tracker)</p>
+                    <div class="flex items-baseline gap-1"><span class="text-3xl font-black text-white" id="wallCount">--</span><span class="text-xs text-slate-500">块</span></div>
+                    <div class="mt-2 h-1.5 w-full bg-slate-800 rounded-full"><div id="wallProgress" class="h-full bg-orange-500 w-0"></div></div>
                 </div>
-                <p class="text-[11px] text-orange-400/80 font-bold mt-1">距离目标满级城墙</p>
-                <div class="mt-4 h-2 w-full bg-slate-800 rounded-full overflow-hidden shadow-inner">
-                    <div id="wallProgress" class="h-full bg-gradient-to-r from-orange-600 to-orange-400 w-0 transition-all duration-1000 relative">
-                        <div class="absolute top-0 left-0 bottom-0 w-full bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[shimmer_1s_linear_infinite]"></div>
-                    </div>
+                <div class="bg-coco-card rounded-2xl p-4 border-l-4 border-cyan-500 shadow-xl glass flex-1 flex flex-col justify-center">
+                    <p class="text-[10px] font-bold text-slate-500 mb-1">装备智能过滤 (Smart Filter)</p>
+                    <div class="text-sm font-bold text-cyan-400" id="equipFilterStatus">已自动忽略 Lv1~Lv2 冷板凳装备</div>
                 </div>
             </div>
         </div>
 
         <div class="auto-grid">
             <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black text-purple-400 text-sm flex items-center gap-1">🛡️ 核心重火力</h3>
-                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-core">0%</span>
-                </div>
-                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-core"></div>
+                <div class="flex justify-between px-2"><h3 class="font-black text-purple-400 text-sm">🛡️ 核心重火力</h3><span class="text-xs text-slate-500 font-mono font-bold" id="score-core">0%</span></div>
+                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4 flex-grow" id="list-core"></div>
             </div>
             <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black text-blue-400 text-sm flex items-center gap-1">🏹 常规防御</h3>
-                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-standard">0%</span>
-                </div>
-                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-standard"></div>
+                <div class="flex justify-between px-2"><h3 class="font-black text-blue-400 text-sm">🏹 常规防御</h3><span class="text-xs text-slate-500 font-mono font-bold" id="score-standard">0%</span></div>
+                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4 flex-grow" id="list-standard"></div>
             </div>
             <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black text-pink-400 text-sm flex items-center gap-1">🧪 科技与英雄</h3>
-                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-tech">0%</span>
-                </div>
-                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-tech"></div>
+                <div class="flex justify-between px-2"><h3 class="font-black text-pink-400 text-sm">🧪 科技与英雄</h3><span class="text-xs text-slate-500 font-mono font-bold" id="score-tech">0%</span></div>
+                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4 flex-grow" id="list-tech"></div>
             </div>
             <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black text-green-400 text-sm flex items-center gap-1">💰 资源与基建</h3>
-                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-eco">0%</span>
-                </div>
-                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-eco"></div>
+                <div class="flex justify-between px-2"><h3 class="font-black text-cyan-400 text-sm">⚒️ 铁匠铺 (装备)</h3><span class="text-xs text-slate-500 font-mono font-bold" id="score-equip">0%</span></div>
+                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4 flex-grow" id="list-equip"></div>
             </div>
             <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black text-orange-400 text-sm flex items-center gap-1">💣 陷阱体系</h3>
-                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-traps">0%</span>
-                </div>
-                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-traps"></div>
+                <div class="flex justify-between px-2"><h3 class="font-black text-green-400 text-sm">💰 资源与基建</h3><span class="text-xs text-slate-500 font-mono font-bold" id="score-eco">0%</span></div>
+                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4 flex-grow" id="list-eco"></div>
+            </div>
+            <div class="flex flex-col gap-3">
+                <div class="flex justify-between px-2"><h3 class="font-black text-orange-400 text-sm">💣 陷阱体系</h3><span class="text-xs text-slate-500 font-mono font-bold" id="score-traps">0%</span></div>
+                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4 flex-grow" id="list-traps"></div>
             </div>
         </div>
     </div>
 
     <script>
+        // 数据库升级：增加 icon 图像支持 (采用通用高质量维基图片链接)
         const COC_DB = {
-            // 核心防御
-            1000031: { name: "天鹰火炮", cat: "core", weight: 5, max: 7 },
-            1000067: { name: "投石机", cat: "core", weight: 5, max: 6 },
-            1000027: { name: "地狱之塔", cat: "core", weight: 4, max: 12 },
-            1000021: { name: "X连弩", cat: "core", weight: 4, max: 12 },
-            1000077: { name: "巨石碑", cat: "core", weight: 5, max: 4 },
-            1000072: { name: "法术塔", cat: "core", weight: 4, max: 4 },
-            1000097: { name: "特殊防御集群", cat: "core", weight: 5, max: 4 },
+            1000031: { name: "天鹰火炮", cat: "core", weight: 5, max: 7, icon: "https://static.wikia.nocookie.net/clashofclans/images/c/c5/Eagle_Artillery7.png" },
+            1000067: { name: "投石机", cat: "core", weight: 5, max: 6, icon: "https://static.wikia.nocookie.net/clashofclans/images/c/cb/Scattershot4.png" },
+            1000027: { name: "地狱之塔", cat: "core", weight: 4, max: 12, icon: "https://static.wikia.nocookie.net/clashofclans/images/3/30/Inferno_Tower10_Multi.png" },
+            1000021: { name: "X连弩", cat: "core", weight: 4, max: 12, icon: "https://static.wikia.nocookie.net/clashofclans/images/6/67/X-Bow11_Ground.png" },
+            1000077: { name: "巨石碑", cat: "core", weight: 5, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/0/05/Monolith3.png" },
+            1000072: { name: "法术塔", cat: "core", weight: 4, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/f/f3/Spell_Tower3.png" },
+            1000097: { name: "合成防御集群", cat: "core", weight: 5, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/f/fe/Multi-Archer_Tower2.png" },
             
-            // 常规防御
-            1000012: { name: "防空火箭", cat: "standard", weight: 3, max: 16 },
-            1000009: { name: "箭塔", cat: "standard", weight: 2, max: 21 },
-            1000008: { name: "加农炮", cat: "standard", weight: 2, max: 21 },
-            1000011: { name: "法师塔", cat: "standard", weight: 3, max: 17 },
-            1000013: { name: "迫击炮", cat: "standard", weight: 2, max: 18 },
-            1000019: { name: "隐藏电磁塔", cat: "standard", weight: 2, max: 17 },
-            1000028: { name: "空气炮", cat: "standard", weight: 2, max: 7 },
-            1000032: { name: "炸弹塔", cat: "standard", weight: 3, max: 12 },
-            1000084: { name: "多管箭塔", cat: "standard", weight: 4, max: 4 },
-            1000085: { name: "跳弹加农炮", cat: "standard", weight: 4, max: 4 },
-            1000089: { name: "火焰喷射塔", cat: "standard", weight: 4, max: 3 },
-            1000079: { name: "多管齿轮塔", cat: "standard", weight: 4, max: 3 },
+            1000012: { name: "防空火箭", cat: "standard", weight: 3, max: 16, icon: "https://static.wikia.nocookie.net/clashofclans/images/b/ba/Air_Defense14.png" },
+            1000009: { name: "箭塔", cat: "standard", weight: 2, max: 21, icon: "https://static.wikia.nocookie.net/clashofclans/images/6/66/Archer_Tower21.png" },
+            1000008: { name: "加农炮", cat: "standard", weight: 2, max: 21, icon: "https://static.wikia.nocookie.net/clashofclans/images/9/91/Cannon21.png" },
+            1000011: { name: "法师塔", cat: "standard", weight: 3, max: 17, icon: "https://static.wikia.nocookie.net/clashofclans/images/1/15/Wizard_Tower16.png" },
+            1000019: { name: "隐藏电磁塔", cat: "standard", weight: 2, max: 17, icon: "https://static.wikia.nocookie.net/clashofclans/images/b/b1/Hidden_Tesla14.png" },
             
-            // 资源与基建
-            1000000: { name: "兵营", cat: "eco", weight: 3, max: 13 },
-            1000007: { name: "实验室", cat: "eco", weight: 3, max: 16 },
-            1000068: { name: "战宠小屋", cat: "eco", weight: 3, max: 12 },
-            1000070: { name: "铁匠铺", cat: "eco", weight: 3, max: 9 },
-            1000004: { name: "金矿", cat: "eco", weight: 1, max: 17 },
-            1000002: { name: "圣水收集器", cat: "eco", weight: 1, max: 17 },
-            1000005: { name: "储金罐", cat: "eco", weight: 2, max: 19 },
-            1000003: { name: "圣水瓶", cat: "eco", weight: 2, max: 19 },
-            1000024: { name: "暗黑重油罐", cat: "eco", weight: 2, max: 13 },
-            1000014: { name: "部落城堡", cat: "eco", weight: 3, max: 14 },
-            1000006: { name: "训练营", cat: "eco", weight: 3, max: 19 },
-            1000020: { name: "法术工厂", cat: "eco", weight: 3, max: 9 },
-            1000071: { name: "英雄大厅", cat: "eco", weight: 3, max: 12 },
-            
-            // 陷阱
-            1000010: { name: "城墙", cat: "traps", weight: 0.1, max: 19 },
-            12000000: { name: "隐形炸弹", cat: "traps", weight: 1, max: 14 },
-            12000002: { name: "巨型炸弹", cat: "traps", weight: 1.5, max: 12 },
-            12000005: { name: "空中炸弹", cat: "traps", weight: 1.5, max: 13 },
-            12000006: { name: "搜空地雷", cat: "traps", weight: 1.5, max: 8 },
-            12000016: { name: "飓风陷阱", cat: "traps", weight: 2, max: 3 },
-            12000020: { name: "千兆巨弹", cat: "traps", weight: 1.5, max: 4 },
-
-            // 核心英雄
-            28000000: { name: "野蛮人之王", cat: "tech", weight: 5, max: 105 },
-            28000001: { name: "弓箭女皇", cat: "tech", weight: 5, max: 105 },
-            28000002: { name: "大守护者", cat: "tech", weight: 5, max: 80 },
-            28000004: { name: "飞盾战神", cat: "tech", weight: 5, max: 55 },
-            28000006: { name: "新界英雄", cat: "tech", weight: 5, max: 85 }
+            28000000: { name: "野蛮人之王", cat: "tech", weight: 5, max: 105, icon: "https://static.wikia.nocookie.net/clashofclans/images/8/87/Barbarian_King_info.png" },
+            28000001: { name: "弓箭女皇", cat: "tech", weight: 5, max: 105, icon: "https://static.wikia.nocookie.net/clashofclans/images/e/ed/Archer_Queen_info.png" },
+            28000002: { name: "大守护者", cat: "tech", weight: 5, max: 80, icon: "https://static.wikia.nocookie.net/clashofclans/images/a/a2/Grand_Warden_info.png" },
+            28000004: { name: "飞盾战神", cat: "tech", weight: 5, max: 55, icon: "https://static.wikia.nocookie.net/clashofclans/images/a/ae/Royal_Champion_info.png" }
         };
+
+        // Fallback 图片
+        const DEFAULT_ICON = "https://placehold.co/100x100/1e293b/475569?text=COC";
 
         let myChart = null;
 
@@ -217,34 +163,47 @@
             const rawText = document.getElementById('jsonInput').value.trim();
             if(!rawText) return;
             let data;
-            try { data = JSON.parse(rawText); } catch (e) { return alert("数据解析失败，请确保复制了完整的 JSON 格式文本。"); }
+            try { data = JSON.parse(rawText); } catch (e) { return alert("JSON 格式错误"); }
 
-            document.getElementById('playerTag').textContent = "玩家标识: " + (data.tag || "未知");
+            document.getElementById('playerTag').textContent = "TAG: " + (data.tag || "Unknown");
             
             const inventory = new Map();
             const allItems = [
-                ...(data.buildings || []), ...(data.traps || []),
-                ...(data.units || []), ...(data.spells || []),
-                ...(data.heroes || []), ...(data.siege_machines || []),
+                ...(data.buildings || []), ...(data.traps || []), ...(data.units || []), 
+                ...(data.spells || []), ...(data.heroes || []), ...(data.siege_machines || []),
                 ...(data.pets || []), ...(data.equipment || [])
             ];
             
-            let wallTotalCount = 0;
-            let wallMaxedCount = 0;
+            let wallTotal = 0, wallMax = 0;
+            let ignoredEquipCount = 0;
 
             allItems.forEach(item => {
                 if (item.data === 1000010) {
                     const c = item.cnt || 1;
-                    wallTotalCount += c;
-                    if ((item.lvl || 0) >= COC_DB[1000010].max) wallMaxedCount += c;
+                    wallTotal += c;
+                    if ((item.lvl || 0) >= 19) wallMax += c; // TH18 假定 19级墙
+                    return; // 墙不进入主循环
                 }
 
+                const strId = String(item.data);
+                
+                // 【核心优化点】：装备分类与过滤
+                if (strId.startsWith("9000")) {
+                    const lvl = item.lvl || 0;
+                    // 如果装备等级小于 3 级，直接认定为“不使用的冷板凳装备”，彻底忽略不计入进度！
+                    if (lvl < 3) {
+                        ignoredEquipCount++;
+                        return; 
+                    }
+                    if(!COC_DB[item.data]) COC_DB[item.data] = { name: "主力装备 " + strId.slice(-3), cat: "equip", weight: 2, max: 27, icon: DEFAULT_ICON };
+                }
+
+                // 动态注册未知项目
                 if(!COC_DB[item.data]) {
-                    const strId = String(item.data);
-                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "兵种/战车 " + strId.slice(-3), cat: "tech", weight: 1, max: 14 };
-                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "配置法术 " + strId.slice(-3), cat: "tech", weight: 1, max: 12 };
-                    else if (strId.startsWith("7300")) COC_DB[item.data] = { name: "战宠 " + strId.slice(-3), cat: "tech", weight: 2, max: 15 };
-                    else if (strId.startsWith("9000")) COC_DB[item.data] = { name: "英雄装备 " + strId.slice(-3), cat: "tech", weight: 2, max: 27 };
+                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "兵种/战车 " + strId.slice(-3), cat: "tech", weight: 1, max: 14, icon: DEFAULT_ICON };
+                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "法术 " + strId.slice(-3), cat: "tech", weight: 1, max: 12, icon: DEFAULT_ICON };
+                    else if (strId.startsWith("7300")) COC_DB[item.data] = { name: "战宠 " + strId.slice(-3), cat: "tech", weight: 2, max: 15, icon: DEFAULT_ICON };
+                    else if (strId.startsWith("1000")) COC_DB[item.data] = { name: "常规建筑", cat: "eco", weight: 1, max: 15, icon: DEFAULT_ICON }; // 兜底
                     else return; 
                 }
 
@@ -252,17 +211,15 @@
                 for(let i=0; i<(item.cnt || 1); i++) inventory.get(item.data).push(item.lvl || 0);
             });
 
-            const wallLeft = wallTotalCount > 0 ? (wallTotalCount - wallMaxedCount) : 0;
-            document.getElementById('wallCount').textContent = wallLeft;
-            const wallP = wallTotalCount > 0 ? Math.floor((wallMaxedCount / wallTotalCount) * 100) : 0;
-            document.getElementById('wallProgress').style.width = wallP + '%';
+            document.getElementById('equipFilterStatus').textContent = `已自动过滤 ${ignoredEquipCount} 件 Lv1~Lv2 闲置装备`;
+            document.getElementById('wallCount').textContent = wallTotal > 0 ? (wallTotal - wallMax) : 0;
+            document.getElementById('wallProgress').style.width = wallTotal > 0 ? Math.floor((wallMax/wallTotal)*100) + '%' : '0%';
 
-            const uiData = { core: [], standard: [], eco: [], traps: [], tech: [] };
+            const uiData = { core: [], standard: [], eco: [], traps: [], tech: [], equip: [] };
             let totalS = 0, totalW = 0;
-            let cats = { core: {s:0, w:0}, standard: {s:0, w:0}, eco: {s:0, w:0}, traps: {s:0, w:0}, tech: {s:0, w:0} };
+            let cats = { core: {s:0, w:0}, standard: {s:0, w:0}, eco: {s:0, w:0}, traps: {s:0, w:0}, tech: {s:0, w:0}, equip: {s:0, w:0} };
             
-            // 木桶效应诊断
-            let worstCat = { name: "全体系满级", percent: 100 };
+            let urgentTarget = null;
 
             inventory.forEach((lvls, id) => {
                 const info = COC_DB[id];
@@ -274,13 +231,7 @@
                 Object.keys(levelCounts).sort((a,b)=>b-a).forEach(l => {
                     const lvl = parseInt(l);
                     curL += Math.min(lvl, info.max) * levelCounts[lvl];
-                    
-                    let typeText = '正常'; let typeClass = 'normal';
-                    if(lvl >= info.max) { typeText = '已满'; typeClass = 'maxed'; }
-                    else if(info.max - lvl >= 3) { typeText = '严重滞后'; typeClass = 'critical'; }
-                    else if(info.max - lvl === 2) { typeText = '滞后'; typeClass = 'lagging'; }
-                    
-                    tags.push({ text: `Lv${lvl}(${typeText}) × ${levelCounts[lvl]}`, type: typeClass });
+                    tags.push({ text: `Lv${lvl}${lvl>=info.max?'(M)':''}×${levelCounts[lvl]}`, type: lvl>=info.max?'maxed':(info.max-lvl<=1?'normal':(info.max-lvl<=2?'lagging':'critical')) });
                 });
 
                 const p = maxL === 0 ? 100 : Math.floor((curL/maxL)*100);
@@ -290,33 +241,33 @@
                 totalS += p * weight; totalW += weight;
                 cats[info.cat].s += p * weight; cats[info.cat].w += weight;
 
+                // 寻找最紧急升级目标 (只看核心或常规防御)
+                if (!isMaxed && (info.cat === 'core' || info.cat === 'standard')) {
+                    if (!urgentTarget || p < urgentTarget.p) urgentTarget = { name: info.name, p: p, icon: info.icon || DEFAULT_ICON, max: info.max, minLvl: Math.min(...lvls) };
+                }
+
                 uiData[info.cat].push({ 
-                    name: info.name, p, isMaxed,
-                    color: info.cat==='core'?'purple':(info.cat==='eco'?'green':(info.cat==='traps'?'orange':(info.cat==='tech'?'pink':'blue'))), 
+                    name: info.name, p, isMaxed, icon: info.icon || DEFAULT_ICON,
+                    color: info.cat==='core'?'purple':(info.cat==='eco'?'green':(info.cat==='traps'?'orange':(info.cat==='tech'?'pink':(info.cat==='equip'?'cyan':'blue')))), 
                     tags 
                 });
             });
 
+            // 渲染下一步行动
+            if (urgentTarget) {
+                document.getElementById('urgentIcon').src = urgentTarget.icon;
+                document.getElementById('insightTitle').innerHTML = `<span class="text-red-400">${urgentTarget.name}</span>`;
+                document.getElementById('insightDesc').innerHTML = `当前最低仅 <b>Lv${urgentTarget.minLvl}</b> (目标 Lv${urgentTarget.max})。综合进度 ${urgentTarget.p}%，严重破坏防御阵型下限，建议立刻升级。`;
+            } else {
+                document.getElementById('insightTitle').textContent = "防御体系已全满";
+                document.getElementById('insightDesc').textContent = "未检测到防御短板，请关注科技与装备的打磨。";
+            }
+
             const finalP = totalW === 0 ? 0 : Math.floor(totalS / totalW);
-            
-            const catNames = { core: "核心重火力", standard: "常规防御", tech: "科技与英雄", eco: "资源与基建", traps: "陷阱体系" };
-            ['core', 'standard', 'eco', 'traps', 'tech'].forEach(cat => {
+            ['core', 'standard', 'eco', 'traps', 'tech', 'equip'].forEach(cat => {
                 const s = cats[cat].w === 0 ? 0 : Math.floor(cats[cat].s / cats[cat].w);
                 document.getElementById(`score-${cat}`).textContent = s + '%';
-                // 找出木桶效应短板 (排除陷阱和资源作为首要瓶颈)
-                if (s < worstCat.percent && (cat === 'core' || cat === 'standard' || cat === 'tech')) {
-                    worstCat = { name: catNames[cat], percent: s };
-                }
             });
-            
-            // 渲染智能诊断
-            if (worstCat.percent >= 98) {
-                document.getElementById('insightTitle').innerHTML = `体系极度完善`;
-                document.getElementById('insightDesc').textContent = `你的各大体系均已达到顶尖水平，无明显短板，可以专注于部落战阵型优化或冲刺传奇杯。`;
-            } else {
-                document.getElementById('insightTitle').innerHTML = `【${worstCat.name}】处于薄弱期`;
-                document.getElementById('insightDesc').innerHTML = `系统扫描发现，你的 <b>${worstCat.name}</b> 综合完成度仅为 <b>${worstCat.percent}%</b>，严重拖累了整体实力。建议优先将资源和工人/实验室倾斜至该板块。`;
-            }
 
             renderUI(finalP, uiData);
         }
@@ -325,44 +276,43 @@
             if(myChart) myChart.destroy();
             myChart = new Chart(document.getElementById('overallChart'), {
                 type: 'doughnut',
-                data: { datasets: [{ data: [p, 100-p], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0, borderRadius: 20, cutout: '82%' }] },
+                data: { datasets: [{ data: [p, 100-p], backgroundColor: ['#3b82f6', '#161d2f'], borderWidth: 0, borderRadius: 20, cutout: '82%' }] },
                 options: { plugins: { legend: false, tooltip: false }, animation: { duration: 2000, easing: 'easeOutQuart' } }
             });
             document.getElementById('overallText').textContent = p + '%';
 
-            ['core', 'standard', 'eco', 'traps', 'tech'].forEach(cat => {
+            ['core', 'standard', 'eco', 'traps', 'tech', 'equip'].forEach(cat => {
                 const list = document.getElementById(`list-${cat}`);
                 const notMaxed = data[cat].filter(i => !i.isMaxed).sort((a,b)=>a.p-b.p);
                 const maxed = data[cat].filter(i => i.isMaxed);
 
                 let html = '';
+                // 渲染未满项目 (增加图标)
                 html += notMaxed.map(item => `
-                    <div class="group">
-                        <div class="flex justify-between items-end mb-1.5">
-                            <span class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors truncate w-3/4" title="${item.name}">${item.name}</span>
-                            <span class="text-[11px] font-mono font-bold text-${item.p < 75 ? 'red-400' : 'slate-400'}">${item.p}%</span>
+                    <div class="flex gap-3 items-center group">
+                        <img src="${item.icon}" onerror="this.src='${DEFAULT_ICON}'" class="item-icon" alt="${item.name}">
+                        <div class="flex-grow min-w-0">
+                            <div class="flex justify-between items-end mb-1">
+                                <span class="text-xs font-bold text-slate-200 truncate pr-2">${item.name}</span>
+                                <span class="text-[10px] font-mono font-bold text-${item.p < 75 ? 'red-400' : 'slate-400'}">${item.p}%</span>
+                            </div>
+                            <div class="progress-track mb-1.5"><div class="progress-fill bg-${item.color}-500" style="width: ${item.p}%"></div></div>
+                            <div class="flex flex-wrap gap-1">${item.tags.map(t => `<span class="level-tag tag-${t.type}">${t.text}</span>`).join('')}</div>
                         </div>
-                        <div class="progress-track mb-2">
-                            <div class="progress-fill bg-${item.color}-500" style="width: ${item.p}%"></div>
-                        </div>
-                        <div class="flex flex-wrap gap-1">${item.tags.map(t => `<span class="level-tag tag-${t.type}">${t.text}</span>`).join('')}</div>
                     </div>
                 `).join('');
 
+                // 渲染已满项目池 (无图极简)
                 if (maxed.length > 0) {
                     html += `
                     <div class="mt-2 pt-3 border-t border-slate-700/50">
-                        <p class="text-[10px] font-bold text-slate-500 mb-2 flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            已满级设施 (${maxed.length})
-                        </p>
+                        <p class="text-[10px] font-bold text-slate-500 mb-2 flex items-center gap-1">✅ 已满级 (${maxed.length})</p>
                         <div class="flex flex-wrap gap-1">
-                            ${maxed.map(item => `<span class="px-1.5 py-0.5 bg-slate-800/40 text-slate-500 text-[10px] rounded border border-slate-700/50 truncate max-w-[80px] hover:max-w-none transition-all cursor-help" title="${item.name}">${item.name}</span>`).join('')}
+                            ${maxed.map(item => `<span class="px-1.5 py-0.5 bg-slate-800/40 text-slate-500 text-[9px] rounded border border-slate-700/50 cursor-help" title="已达到当前大本营满级标准">${item.name}</span>`).join('')}
                         </div>
                     </div>`;
                 }
-
-                if (html === '') html = `<div class="text-slate-600 text-xs text-center py-6">无相关数据</div>`;
+                if (html === '') html = `<div class="text-slate-600 text-xs text-center py-6">无数据或全部忽略</div>`;
                 list.innerHTML = html;
             });
         }
@@ -370,11 +320,7 @@
         document.getElementById('btnAnalyze').addEventListener('click', analyzeData);
 
         const ctx = document.getElementById('overallChart').getContext('2d');
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: { datasets: [{ data: [0, 100], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0, borderRadius: 20, cutout: '82%' }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, tooltip: false } }
-        });
+        myChart = new Chart(ctx, { type: 'doughnut', data: { datasets: [{ data: [0,100], backgroundColor: ['#3b82f6', '#161d2f'], borderWidth: 0, borderRadius: 20, cutout: '82%' }] }});
     </script>
 </body>
 </html>
