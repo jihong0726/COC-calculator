@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COC 全景指挥舱 V5.0 - 全维解析版</title>
+    <title>COC 全景指挥舱 V6.0 - 全中文优化版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        coco: { bg: '#0b0f1a', card: '#161d2f', accent: '#3b82f6', purple: '#a855f7', green: '#22c55e', orange: '#f59e0b', red: '#ef4444', pink: '#ec4899' }
+                        coco: { bg: '#090d15', card: '#131b2c', accent: '#3b82f6', purple: '#9333ea', green: '#16a34a', orange: '#d97706', red: '#dc2626', pink: '#db2777' }
                     }
                 }
             }
@@ -20,151 +20,166 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .progress-track { @apply h-2 bg-slate-800/80 rounded-full overflow-hidden; }
-            .progress-fill { @apply h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(0,0,0,0.3)]; }
-            .level-tag { @apply px-2 py-0.5 rounded text-[10px] font-mono border whitespace-nowrap transition-all; }
-            .tag-maxed { @apply bg-slate-800/50 text-slate-500 border-slate-700/50; } 
-            .tag-normal { @apply bg-slate-700/80 text-slate-300 border-slate-600; }
-            .tag-lagging { @apply bg-orange-500/15 text-orange-400 border-orange-500/30; }
-            .tag-critical { @apply bg-red-500/15 text-red-400 border-red-500/30; }
-            .glass { @apply bg-opacity-70 backdrop-blur-xl border-slate-800; }
+            .progress-track { @apply h-2.5 bg-slate-800/80 rounded-full overflow-hidden shadow-inner; }
+            .progress-fill { @apply h-full rounded-full transition-all duration-1000 ease-out relative overflow-hidden; }
+            /* 进度条高光动画效果，对标高级工具 */
+            .progress-fill::after {
+                content: '';
+                @apply absolute top-0 left-0 bottom-0 w-full;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                animation: shimmer 2s infinite;
+            }
+            @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+            
+            .level-tag { @apply px-2 py-0.5 rounded text-[11px] font-mono border whitespace-nowrap transition-all shadow-sm cursor-default; }
+            .tag-maxed { @apply bg-slate-800/80 text-slate-400 border-slate-700/80; } 
+            .tag-normal { @apply bg-slate-700 text-slate-200 border-slate-600; }
+            .tag-lagging { @apply bg-orange-900/40 text-orange-400 border-orange-700/50; }
+            .tag-critical { @apply bg-red-900/40 text-red-400 border-red-700/50; }
+            
+            .glass { @apply bg-opacity-80 backdrop-blur-2xl border-slate-800/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)]; }
+            
+            /* 动态网格，自动适应屏幕宽度 */
+            .auto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
         }
     </style>
 </head>
-<body class="text-slate-200 p-4 md:p-8 font-sans antialiased bg-coco-bg selection:bg-coco-accent selection:text-white">
+<body class="text-slate-200 p-4 md:p-6 lg:p-8 font-sans antialiased bg-coco-bg selection:bg-coco-accent selection:text-white min-h-screen">
 
-    <div class="max-w-[1400px] mx-auto">
-        <header class="mb-10">
+    <div class="max-w-[1600px] mx-auto">
+        <header class="mb-8">
             <div class="flex items-center gap-3 mb-6">
-                <div class="w-10 h-10 bg-gradient-to-br from-coco-accent to-blue-800 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.4)]">
+                <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-700 rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-black text-white tracking-tighter uppercase italic">Commander <span class="text-coco-accent">Dashboard</span></h1>
-                    <p class="text-[10px] text-slate-500 font-mono tracking-widest uppercase">Version 5.0 // Full-Tech Integration</p>
+                    <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight">部落冲突 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">全景指挥舱</span></h1>
+                    <p class="text-xs text-slate-500 tracking-wider mt-1">V6.0 智能数据分析终端 | 目标：满级 TH18</p>
                 </div>
             </div>
             
-            <div class="bg-coco-card border rounded-2xl p-4 shadow-2xl flex flex-col md:flex-row gap-4 items-center glass">
-                <textarea id="jsonInput" class="w-full md:w-3/4 h-16 bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-xs font-mono text-slate-400 focus:outline-none focus:border-coco-accent transition-all resize-none" placeholder="在此粘贴导出的 JSON 源码 (包含 units, spells, heroes 等)..."></textarea>
+            <div class="bg-coco-card border rounded-2xl p-4 shadow-xl flex flex-col md:flex-row gap-4 items-center glass">
+                <textarea id="jsonInput" class="w-full md:w-3/4 h-16 bg-slate-900/80 border border-slate-700/80 rounded-xl p-3 text-xs font-mono text-slate-400 focus:outline-none focus:border-coco-accent focus:ring-1 focus:ring-coco-accent transition-all resize-none" placeholder="在此粘贴导出的游戏 JSON 数据 (包含建筑、科技、法术等)..."></textarea>
                 <div class="w-full md:w-1/4 space-y-2">
-                    <button id="btnAnalyze" class="w-full bg-coco-accent hover:bg-blue-500 text-white font-black py-3 px-4 rounded-xl transition-all transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
-                        <span>ANALYZE</span>
+                    <button id="btnAnalyze" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span>一键解析数据</span>
                     </button>
-                    <div class="flex justify-between items-center text-[10px] uppercase font-bold px-1">
-                        <span id="playerTag" class="text-slate-500">Status: Idle</span>
-                        <span class="text-coco-accent">TH18 MAX</span>
+                    <div class="flex justify-between items-center text-[11px] font-bold px-1">
+                        <span id="playerTag" class="text-slate-500">等待导入...</span>
                     </div>
                 </div>
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-            <div class="lg:col-span-3 bg-coco-card rounded-3xl p-6 border relative shadow-2xl overflow-hidden glass flex flex-col items-center justify-center">
-                <div class="absolute -top-20 -left-20 w-48 h-48 bg-coco-accent/20 blur-[60px] rounded-full pointer-events-none"></div>
-                <h2 class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4 text-center w-full">Overall Rating</h2>
-                <div class="relative w-full max-w-[160px] aspect-square">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            <div class="lg:col-span-3 bg-coco-card rounded-3xl p-6 border relative shadow-xl overflow-hidden glass flex flex-col items-center justify-center">
+                <div class="absolute -top-16 -left-16 w-40 h-40 bg-blue-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+                <h2 class="text-xs font-bold text-slate-400 mb-6 text-center w-full">综合加权总进度</h2>
+                <div class="relative w-full max-w-[150px] aspect-square">
                     <canvas id="overallChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <div class="absolute inset-0 flex flex-col items-center justify-center mt-2">
                         <span class="text-4xl font-black text-white tracking-tighter" id="overallText">0%</span>
                     </div>
                 </div>
             </div>
 
-            <div class="lg:col-span-9 grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-coco-card rounded-2xl p-6 border-l-4 border-coco-purple shadow-xl glass flex flex-col justify-center">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Defense</p>
-                    <h3 class="text-3xl font-black text-white italic" id="statDef">--</h3>
-                    <p class="text-[10px] text-slate-400 mt-2">核心与常规防御</p>
+            <div class="lg:col-span-6 bg-coco-card rounded-3xl p-6 border shadow-xl glass flex flex-col justify-center relative overflow-hidden">
+                <div class="absolute right-0 bottom-0 w-64 h-64 bg-red-500/5 blur-[80px] rounded-full pointer-events-none"></div>
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="relative flex h-3 w-3">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                    </span>
+                    <h3 class="text-xs font-bold text-slate-300">智能诊断：当前最大瓶颈</h3>
                 </div>
-                <div class="bg-coco-card rounded-2xl p-6 border-l-4 border-coco-pink shadow-xl glass flex flex-col justify-center">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Heroes & Tech</p>
-                    <h3 class="text-3xl font-black text-white italic" id="statTech">--</h3>
-                    <p class="text-[10px] text-slate-400 mt-2">英雄、宠物、兵种法术</p>
+                <h2 class="text-2xl md:text-3xl font-black text-white mb-3" id="insightTitle">请先导入数据</h2>
+                <p class="text-sm text-slate-400 leading-relaxed" id="insightDesc">系统将自动扫描你的五大防御与科技体系，找出严重拖后腿的设施或兵种，并提供精准的升级策略优先级建议。</p>
+            </div>
+
+            <div class="lg:col-span-3 bg-coco-card rounded-3xl p-6 border-b-4 border-b-orange-500 shadow-xl glass flex flex-col justify-center">
+                <h3 class="text-xs font-bold text-slate-400 mb-3 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path></svg>
+                    刷墙进度追踪
+                </h3>
+                <div class="flex items-baseline gap-1 mb-1">
+                    <span class="text-4xl font-black text-white" id="wallCount">--</span>
+                    <span class="text-sm text-slate-500 font-bold">块待刷</span>
                 </div>
-                <div class="bg-coco-card rounded-2xl p-6 border-l-4 border-coco-green shadow-xl glass flex flex-col justify-center">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Economy</p>
-                    <h3 class="text-3xl font-black text-white italic" id="statEco">--</h3>
-                    <p class="text-[10px] text-slate-400 mt-2">资源与科技基建</p>
-                </div>
-                <div class="bg-coco-card rounded-2xl p-6 border-l-4 border-coco-orange shadow-xl glass flex flex-col justify-center relative overflow-hidden">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Wall Tracker</p>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-3xl font-black text-white" id="wallCount">--</span>
-                        <span class="text-xs text-slate-500 font-bold">待刷</span>
-                    </div>
-                    <div class="mt-2 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                        <div id="wallProgress" class="h-full bg-coco-orange w-0 transition-all duration-1000"></div>
+                <p class="text-[11px] text-orange-400/80 font-bold mt-1">距离目标满级城墙</p>
+                <div class="mt-4 h-2 w-full bg-slate-800 rounded-full overflow-hidden shadow-inner">
+                    <div id="wallProgress" class="h-full bg-gradient-to-r from-orange-600 to-orange-400 w-0 transition-all duration-1000 relative">
+                        <div class="absolute top-0 left-0 bottom-0 w-full bg-[linear-gradient(45deg,rgba(255,255,255,0.15)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.15)_50%,rgba(255,255,255,0.15)_75%,transparent_75%,transparent)] bg-[length:1rem_1rem] animate-[shimmer_1s_linear_infinite]"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-5">
-            <div class="space-y-4">
+        <div class="auto-grid">
+            <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black italic text-coco-purple uppercase text-sm tracking-wider">01. Core</h3>
-                    <span class="text-[10px] text-slate-500 font-mono" id="score-core">0%</span>
+                    <h3 class="font-black text-purple-400 text-sm flex items-center gap-1">🛡️ 核心重火力</h3>
+                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-core">0%</span>
                 </div>
-                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4" id="list-core"></div>
+                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-core"></div>
             </div>
-            <div class="space-y-4">
+            <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black italic text-coco-accent uppercase text-sm tracking-wider">02. Standard</h3>
-                    <span class="text-[10px] text-slate-500 font-mono" id="score-standard">0%</span>
+                    <h3 class="font-black text-blue-400 text-sm flex items-center gap-1">🏹 常规防御</h3>
+                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-standard">0%</span>
                 </div>
-                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4" id="list-standard"></div>
+                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-standard"></div>
             </div>
-            
-            <div class="space-y-4">
+            <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black italic text-coco-pink uppercase text-sm tracking-wider">03. Tech</h3>
-                    <span class="text-[10px] text-slate-500 font-mono" id="score-tech">0%</span>
+                    <h3 class="font-black text-pink-400 text-sm flex items-center gap-1">🧪 科技与英雄</h3>
+                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-tech">0%</span>
                 </div>
-                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4" id="list-tech"></div>
+                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-tech"></div>
             </div>
-
-            <div class="space-y-4">
+            <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black italic text-coco-green uppercase text-sm tracking-wider">04. Eco</h3>
-                    <span class="text-[10px] text-slate-500 font-mono" id="score-eco">0%</span>
+                    <h3 class="font-black text-green-400 text-sm flex items-center gap-1">💰 资源与基建</h3>
+                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-eco">0%</span>
                 </div>
-                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4" id="list-eco"></div>
+                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-eco"></div>
             </div>
-            <div class="space-y-4">
+            <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between px-2">
-                    <h3 class="font-black italic text-coco-orange uppercase text-sm tracking-wider">05. Traps</h3>
-                    <span class="text-[10px] text-slate-500 font-mono" id="score-traps">0%</span>
+                    <h3 class="font-black text-orange-400 text-sm flex items-center gap-1">💣 陷阱体系</h3>
+                    <span class="text-xs text-slate-500 font-mono font-bold bg-slate-800/50 px-2 py-0.5 rounded" id="score-traps">0%</span>
                 </div>
-                <div class="bg-coco-card rounded-3xl p-4 border glass flex flex-col gap-4" id="list-traps"></div>
+                <div class="bg-coco-card rounded-3xl p-5 border glass flex flex-col gap-5 flex-grow" id="list-traps"></div>
             </div>
         </div>
     </div>
 
     <script>
         const COC_DB = {
-            // 防御与基建
+            // 核心防御
             1000031: { name: "天鹰火炮", cat: "core", weight: 5, max: 7 },
             1000067: { name: "投石机", cat: "core", weight: 5, max: 6 },
-            1000027: { name: "地狱塔", cat: "core", weight: 4, max: 12 },
+            1000027: { name: "地狱之塔", cat: "core", weight: 4, max: 12 },
             1000021: { name: "X连弩", cat: "core", weight: 4, max: 12 },
             1000077: { name: "巨石碑", cat: "core", weight: 5, max: 4 },
             1000072: { name: "法术塔", cat: "core", weight: 4, max: 4 },
-            1000097: { name: "融合/守护者", cat: "core", weight: 5, max: 4 },
+            1000097: { name: "特殊防御集群", cat: "core", weight: 5, max: 4 },
             
+            // 常规防御
             1000012: { name: "防空火箭", cat: "standard", weight: 3, max: 16 },
             1000009: { name: "箭塔", cat: "standard", weight: 2, max: 21 },
             1000008: { name: "加农炮", cat: "standard", weight: 2, max: 21 },
             1000011: { name: "法师塔", cat: "standard", weight: 3, max: 17 },
             1000013: { name: "迫击炮", cat: "standard", weight: 2, max: 18 },
-            1000019: { name: "隐藏电塔", cat: "standard", weight: 2, max: 17 },
-            1000028: { name: "吹风机", cat: "standard", weight: 2, max: 7 },
+            1000019: { name: "隐藏电磁塔", cat: "standard", weight: 2, max: 17 },
+            1000028: { name: "空气炮", cat: "standard", weight: 2, max: 7 },
             1000032: { name: "炸弹塔", cat: "standard", weight: 3, max: 12 },
             1000084: { name: "多管箭塔", cat: "standard", weight: 4, max: 4 },
             1000085: { name: "跳弹加农炮", cat: "standard", weight: 4, max: 4 },
-            1000089: { name: "喷火塔", cat: "standard", weight: 4, max: 3 },
+            1000089: { name: "火焰喷射塔", cat: "standard", weight: 4, max: 3 },
             1000079: { name: "多管齿轮塔", cat: "standard", weight: 4, max: 3 },
             
+            // 资源与基建
             1000000: { name: "兵营", cat: "eco", weight: 3, max: 13 },
             1000007: { name: "实验室", cat: "eco", weight: 3, max: 16 },
             1000068: { name: "战宠小屋", cat: "eco", weight: 3, max: 12 },
@@ -173,26 +188,27 @@
             1000002: { name: "圣水收集器", cat: "eco", weight: 1, max: 17 },
             1000005: { name: "储金罐", cat: "eco", weight: 2, max: 19 },
             1000003: { name: "圣水瓶", cat: "eco", weight: 2, max: 19 },
-            1000024: { name: "暗黑油罐", cat: "eco", weight: 2, max: 13 },
+            1000024: { name: "暗黑重油罐", cat: "eco", weight: 2, max: 13 },
             1000014: { name: "部落城堡", cat: "eco", weight: 3, max: 14 },
             1000006: { name: "训练营", cat: "eco", weight: 3, max: 19 },
             1000020: { name: "法术工厂", cat: "eco", weight: 3, max: 9 },
             1000071: { name: "英雄大厅", cat: "eco", weight: 3, max: 12 },
             
+            // 陷阱
             1000010: { name: "城墙", cat: "traps", weight: 0.1, max: 19 },
             12000000: { name: "隐形炸弹", cat: "traps", weight: 1, max: 14 },
             12000002: { name: "巨型炸弹", cat: "traps", weight: 1.5, max: 12 },
             12000005: { name: "空中炸弹", cat: "traps", weight: 1.5, max: 13 },
             12000006: { name: "搜空地雷", cat: "traps", weight: 1.5, max: 8 },
             12000016: { name: "飓风陷阱", cat: "traps", weight: 2, max: 3 },
-            12000020: { name: "千兆炸弹", cat: "traps", weight: 1.5, max: 4 },
+            12000020: { name: "千兆巨弹", cat: "traps", weight: 1.5, max: 4 },
 
-            // 核心英雄 (硬编码重点保障)
+            // 核心英雄
             28000000: { name: "野蛮人之王", cat: "tech", weight: 5, max: 105 },
             28000001: { name: "弓箭女皇", cat: "tech", weight: 5, max: 105 },
             28000002: { name: "大守护者", cat: "tech", weight: 5, max: 80 },
             28000004: { name: "飞盾战神", cat: "tech", weight: 5, max: 55 },
-            28000006: { name: "明尼翁王子/新英雄", cat: "tech", weight: 5, max: 85 }
+            28000006: { name: "新界英雄", cat: "tech", weight: 5, max: 85 }
         };
 
         let myChart = null;
@@ -201,12 +217,11 @@
             const rawText = document.getElementById('jsonInput').value.trim();
             if(!rawText) return;
             let data;
-            try { data = JSON.parse(rawText); } catch (e) { return alert("JSON 解析失败"); }
+            try { data = JSON.parse(rawText); } catch (e) { return alert("数据解析失败，请确保复制了完整的 JSON 格式文本。"); }
 
-            document.getElementById('playerTag').textContent = "TAG: " + (data.tag || "Unknown");
+            document.getElementById('playerTag').textContent = "玩家标识: " + (data.tag || "未知");
             
             const inventory = new Map();
-            // 包含所有的数组：建筑、陷阱、兵种、法术、攻城、英雄、宠物、装备
             const allItems = [
                 ...(data.buildings || []), ...(data.traps || []),
                 ...(data.units || []), ...(data.spells || []),
@@ -218,32 +233,25 @@
             let wallMaxedCount = 0;
 
             allItems.forEach(item => {
-                // 城墙特化处理
                 if (item.data === 1000010) {
                     const c = item.cnt || 1;
                     wallTotalCount += c;
                     if ((item.lvl || 0) >= COC_DB[1000010].max) wallMaxedCount += c;
                 }
 
-                // 动态解析未知科技标签 (Dynamic Fallback Algorithm)
                 if(!COC_DB[item.data]) {
                     const strId = String(item.data);
-                    // 兵种与攻城机器
-                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "兵种/攻城 " + strId.slice(-3), cat: "tech", weight: 1, max: 14 };
-                    // 法术
-                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "法术 " + strId.slice(-3), cat: "tech", weight: 1, max: 12 };
-                    // 战宠
+                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "兵种/战车 " + strId.slice(-3), cat: "tech", weight: 1, max: 14 };
+                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "配置法术 " + strId.slice(-3), cat: "tech", weight: 1, max: 12 };
                     else if (strId.startsWith("7300")) COC_DB[item.data] = { name: "战宠 " + strId.slice(-3), cat: "tech", weight: 2, max: 15 };
-                    // 英雄装备
-                    else if (strId.startsWith("9000")) COC_DB[item.data] = { name: "装备 " + strId.slice(-3), cat: "tech", weight: 2, max: 27 };
-                    else return; // 忽略装饰品和障碍物
+                    else if (strId.startsWith("9000")) COC_DB[item.data] = { name: "英雄装备 " + strId.slice(-3), cat: "tech", weight: 2, max: 27 };
+                    else return; 
                 }
 
                 if(!inventory.has(item.data)) inventory.set(item.data, []);
                 for(let i=0; i<(item.cnt || 1); i++) inventory.get(item.data).push(item.lvl || 0);
             });
 
-            // 墙块 UI 刷新
             const wallLeft = wallTotalCount > 0 ? (wallTotalCount - wallMaxedCount) : 0;
             document.getElementById('wallCount').textContent = wallLeft;
             const wallP = wallTotalCount > 0 ? Math.floor((wallMaxedCount / wallTotalCount) * 100) : 0;
@@ -252,6 +260,9 @@
             const uiData = { core: [], standard: [], eco: [], traps: [], tech: [] };
             let totalS = 0, totalW = 0;
             let cats = { core: {s:0, w:0}, standard: {s:0, w:0}, eco: {s:0, w:0}, traps: {s:0, w:0}, tech: {s:0, w:0} };
+            
+            // 木桶效应诊断
+            let worstCat = { name: "全体系满级", percent: 100 };
 
             inventory.forEach((lvls, id) => {
                 const info = COC_DB[id];
@@ -263,7 +274,13 @@
                 Object.keys(levelCounts).sort((a,b)=>b-a).forEach(l => {
                     const lvl = parseInt(l);
                     curL += Math.min(lvl, info.max) * levelCounts[lvl];
-                    tags.push({ text: `Lv${lvl}${lvl>=info.max?'(M)':''} × ${levelCounts[lvl]}`, type: lvl>=info.max?'maxed':(info.max-lvl<=1?'normal':'lagging') });
+                    
+                    let typeText = '正常'; let typeClass = 'normal';
+                    if(lvl >= info.max) { typeText = '已满'; typeClass = 'maxed'; }
+                    else if(info.max - lvl >= 3) { typeText = '严重滞后'; typeClass = 'critical'; }
+                    else if(info.max - lvl === 2) { typeText = '滞后'; typeClass = 'lagging'; }
+                    
+                    tags.push({ text: `Lv${lvl}(${typeText}) × ${levelCounts[lvl]}`, type: typeClass });
                 });
 
                 const p = maxL === 0 ? 100 : Math.floor((curL/maxL)*100);
@@ -274,23 +291,32 @@
                 cats[info.cat].s += p * weight; cats[info.cat].w += weight;
 
                 uiData[info.cat].push({ 
-                    name: info.name, 
-                    p, 
-                    isMaxed,
-                    color: info.cat==='core'?'purple':(info.cat==='eco'?'green':(info.cat==='traps'?'orange':(info.cat==='tech'?'pink':'accent'))), 
+                    name: info.name, p, isMaxed,
+                    color: info.cat==='core'?'purple':(info.cat==='eco'?'green':(info.cat==='traps'?'orange':(info.cat==='tech'?'pink':'blue'))), 
                     tags 
                 });
             });
 
             const finalP = totalW === 0 ? 0 : Math.floor(totalS / totalW);
+            
+            const catNames = { core: "核心重火力", standard: "常规防御", tech: "科技与英雄", eco: "资源与基建", traps: "陷阱体系" };
             ['core', 'standard', 'eco', 'traps', 'tech'].forEach(cat => {
                 const s = cats[cat].w === 0 ? 0 : Math.floor(cats[cat].s / cats[cat].w);
                 document.getElementById(`score-${cat}`).textContent = s + '%';
+                // 找出木桶效应短板 (排除陷阱和资源作为首要瓶颈)
+                if (s < worstCat.percent && (cat === 'core' || cat === 'standard' || cat === 'tech')) {
+                    worstCat = { name: catNames[cat], percent: s };
+                }
             });
             
-            document.getElementById('statDef').textContent = Math.floor((cats.core.s/cats.core.w + cats.standard.s/cats.standard.w)/2) + "%";
-            document.getElementById('statTech').textContent = Math.floor(cats.tech.s/cats.tech.w) + "%";
-            document.getElementById('statEco').textContent = Math.floor(cats.eco.s/cats.eco.w) + "%";
+            // 渲染智能诊断
+            if (worstCat.percent >= 98) {
+                document.getElementById('insightTitle').innerHTML = `体系极度完善`;
+                document.getElementById('insightDesc').textContent = `你的各大体系均已达到顶尖水平，无明显短板，可以专注于部落战阵型优化或冲刺传奇杯。`;
+            } else {
+                document.getElementById('insightTitle').innerHTML = `【${worstCat.name}】处于薄弱期`;
+                document.getElementById('insightDesc').innerHTML = `系统扫描发现，你的 <b>${worstCat.name}</b> 综合完成度仅为 <b>${worstCat.percent}%</b>，严重拖累了整体实力。建议优先将资源和工人/实验室倾斜至该板块。`;
+            }
 
             renderUI(finalP, uiData);
         }
@@ -299,7 +325,7 @@
             if(myChart) myChart.destroy();
             myChart = new Chart(document.getElementById('overallChart'), {
                 type: 'doughnut',
-                data: { datasets: [{ data: [p, 100-p], backgroundColor: ['#3b82f6', '#161d2f'], borderWidth: 0, borderRadius: 20, cutout: '85%' }] },
+                data: { datasets: [{ data: [p, 100-p], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0, borderRadius: 20, cutout: '82%' }] },
                 options: { plugins: { legend: false, tooltip: false }, animation: { duration: 2000, easing: 'easeOutQuart' } }
             });
             document.getElementById('overallText').textContent = p + '%';
@@ -313,11 +339,11 @@
                 html += notMaxed.map(item => `
                     <div class="group">
                         <div class="flex justify-between items-end mb-1.5">
-                            <span class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors truncate w-2/3">${item.name}</span>
-                            <span class="text-[10px] font-mono text-${item.p < 80 ? 'red-400' : 'slate-400'}">${item.p}%</span>
+                            <span class="text-xs font-bold text-slate-200 group-hover:text-white transition-colors truncate w-3/4" title="${item.name}">${item.name}</span>
+                            <span class="text-[11px] font-mono font-bold text-${item.p < 75 ? 'red-400' : 'slate-400'}">${item.p}%</span>
                         </div>
                         <div class="progress-track mb-2">
-                            <div class="progress-fill bg-coco-${item.p < 80 ? 'red' : item.color}" style="width: ${item.p}%"></div>
+                            <div class="progress-fill bg-${item.color}-500" style="width: ${item.p}%"></div>
                         </div>
                         <div class="flex flex-wrap gap-1">${item.tags.map(t => `<span class="level-tag tag-${t.type}">${t.text}</span>`).join('')}</div>
                     </div>
@@ -325,18 +351,18 @@
 
                 if (maxed.length > 0) {
                     html += `
-                    <div class="mt-2 pt-3 border-t border-slate-800">
-                        <p class="text-[9px] font-bold text-slate-600 uppercase mb-2 flex items-center gap-1">
-                            <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                            Maxed (${maxed.length})
+                    <div class="mt-2 pt-3 border-t border-slate-700/50">
+                        <p class="text-[10px] font-bold text-slate-500 mb-2 flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            已满级设施 (${maxed.length})
                         </p>
                         <div class="flex flex-wrap gap-1">
-                            ${maxed.map(item => `<span class="px-1.5 py-0.5 bg-slate-800/50 text-slate-500 text-[9px] rounded border border-slate-700/50 truncate max-w-[80px] hover:max-w-none transition-all">${item.name}</span>`).join('')}
+                            ${maxed.map(item => `<span class="px-1.5 py-0.5 bg-slate-800/40 text-slate-500 text-[10px] rounded border border-slate-700/50 truncate max-w-[80px] hover:max-w-none transition-all cursor-help" title="${item.name}">${item.name}</span>`).join('')}
                         </div>
                     </div>`;
                 }
 
-                if (html === '') html = `<div class="text-slate-600 text-xs text-center py-6">无数据</div>`;
+                if (html === '') html = `<div class="text-slate-600 text-xs text-center py-6">无相关数据</div>`;
                 list.innerHTML = html;
             });
         }
@@ -346,7 +372,7 @@
         const ctx = document.getElementById('overallChart').getContext('2d');
         myChart = new Chart(ctx, {
             type: 'doughnut',
-            data: { datasets: [{ data: [0, 100], backgroundColor: ['#3b82f6', '#161d2f'], borderWidth: 0, borderRadius: 20, cutout: '85%' }] },
+            data: { datasets: [{ data: [0, 100], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0, borderRadius: 20, cutout: '82%' }] },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, tooltip: false } }
         });
     </script>
