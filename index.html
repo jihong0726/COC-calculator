@@ -3,28 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COC 账号全景指挥舱 - 最终版</title>
+    <title>COC 账号全景指挥舱 - TH18 最终版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // 配置 Tailwind 的扩展颜色，让它更符合 COC 的风格
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        coco: {
-                            bg: '#0f172a',    // 深色背景
-                            card: '#1e293b',  // 卡片背景
-                            accent: '#3b82f6',// 强调蓝
-                            purple: '#8b5cf6',// 核心防御紫
-                            green: '#22c55e', // 资源绿
-                            orange: '#f97316',// 陷阱橙
-                            red: '#ef4444',   // 警告红
-                        }
-                    },
-                    fontFamily: {
-                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace']
+                        coco: { bg: '#0f172a', card: '#1e293b', accent: '#3b82f6', purple: '#8b5cf6', green: '#22c55e', orange: '#f97316', red: '#ef4444' }
                     }
                 }
             }
@@ -32,29 +20,13 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            /* 自定义进度条样式 */
-            .progress-track {
-                @apply h-3 bg-slate-700/50 rounded-full overflow-hidden;
-            }
-            .progress-fill {
-                @apply h-full rounded-full transition-all duration-1000 ease-out;
-            }
-            /* 自定义标签样式 */
-            .level-tag {
-                @apply px-2 py-0.5 rounded text-[11px] font-mono border;
-            }
-            .tag-maxed {
-                @apply bg-blue-500/20 text-blue-400 border-blue-500/30;
-            }
-            .tag-normal {
-                @apply bg-slate-700 text-slate-300 border-slate-600;
-            }
-            .tag-lagging {
-                @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30;
-            }
-            .tag-critical {
-                @apply bg-red-500/20 text-red-400 border-red-500/30;
-            }
+            .progress-track { @apply h-3 bg-slate-700/50 rounded-full overflow-hidden; }
+            .progress-fill { @apply h-full rounded-full transition-all duration-1000 ease-out; }
+            .level-tag { @apply px-2 py-0.5 rounded text-[11px] font-mono border whitespace-nowrap; }
+            .tag-maxed { @apply bg-blue-500/20 text-blue-400 border-blue-500/30; }
+            .tag-normal { @apply bg-slate-700 text-slate-300 border-slate-600; }
+            .tag-lagging { @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30; }
+            .tag-critical { @apply bg-red-500/20 text-red-400 border-red-500/30; }
         }
         body { background-color: theme('colors.coco.bg'); }
     </style>
@@ -62,24 +34,29 @@
 <body class="text-slate-200 p-4 md:p-8 font-sans antialiased">
 
     <div class="max-w-7xl mx-auto">
-        
-        <header class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between">
-            <div>
-                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                    COC 账号全景指挥舱
-                    <span class="text-coco-accent">Dashboard</span>
-                </h1>
-                <p class="text-slate-400 mt-2">
-                    玩家 Tag: <span class="font-mono text-white bg-slate-800 px-2 py-1 rounded" id="playerTag">#GCLU0Q80R</span>
-                    | 当前目标: <span class="text-coco-accent font-bold" id="targetTH">TH18 满防</span>
-                </p>
+        <header class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4">
+                COC 账号全景指挥舱 <span class="text-coco-accent">Dashboard</span>
+            </h1>
+            
+            <div class="bg-coco-card border border-slate-700/50 rounded-xl p-4 shadow-lg flex flex-col md:flex-row gap-4 items-start md:items-center mb-6">
+                <textarea id="jsonInput" class="w-full md:w-2/3 h-20 bg-slate-900 border border-slate-700 rounded-lg p-3 text-xs font-mono text-slate-300 focus:outline-none focus:border-coco-accent" placeholder="请将你的 JSON 数据粘贴在这里..."></textarea>
+                <div class="w-full md:w-1/3 flex flex-col gap-2">
+                    <button id="btnAnalyze" class="w-full bg-coco-accent hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                        一键解析我的数据
+                    </button>
+                    <div class="text-xs text-slate-500 flex justify-between">
+                        <span id="playerTag">等待导入...</span>
+                        <span id="targetTH" class="font-bold text-coco-accent">目标: TH18 满防</span>
+                    </div>
+                </div>
             </div>
         </header>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
             <div class="lg:col-span-4 bg-coco-card rounded-2xl shadow-2xl p-6 border border-slate-700/50 relative overflow-hidden">
                 <div class="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-coco-accent/20 blur-[60px] rounded-full"></div>
-                
                 <h2 class="text-xl font-bold text-white mb-6">综合加权完成度</h2>
                 <div class="relative w-full max-w-[280px] mx-auto aspect-square">
                     <canvas id="overallChart"></canvas>
@@ -92,147 +69,84 @@
 
             <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-purple shadow-lg flex flex-col justify-center">
-                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">关键防御短板</div>
-                    <div class="text-2xl font-bold text-white" id="keyShortfallTitle">-</div>
-                    <div class="mt-3 flex items-center text-sm">
-                        <span class="flex w-2 h-2 rounded-full bg-red-500 mr-2" id="keyShortfallDot"></span>
-                        <span class="text-red-400" id="keyShortfallDesc">-</span>
-                    </div>
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">防御总进度</div>
+                    <div class="text-2xl font-bold text-white" id="statDef">等待解析...</div>
                 </div>
                 <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-green shadow-lg flex flex-col justify-center">
-                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">资源与科技基础</div>
-                    <div class="text-2xl font-bold text-white" id="resourceStatusTitle">-</div>
-                    <div class="mt-3 text-sm text-slate-400" id="resourceStatusDesc">
-                        -
-                    </div>
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">经济与科技基础</div>
+                    <div class="text-2xl font-bold text-white" id="statEco">等待解析...</div>
                 </div>
                 <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-orange shadow-lg flex flex-col justify-center">
-                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">预计满防所需时间</div>
-                    <div class="text-2xl font-bold text-white" id="timeEstimateTitle">-</div>
-                    <div class="mt-3 text-sm text-slate-400" id="timeEstimateDesc">
-                        -
-                    </div>
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">陷阱与城墙</div>
+                    <div class="text-2xl font-bold text-white" id="statTraps">等待解析...</div>
                 </div>
             </div>
         </div>
 
-        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-coco-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6v12M14 6v12M4 10h16M4 14h16" />
-            </svg>
-            分类进度详情
-        </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-            
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
-                <h3 class="text-lg font-bold text-white mb-5 flex items-center">🛡️ 核心重火力 (Core)</h3>
-                <div class="space-y-6" id="list-core"></div>
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50">
+                <div class="w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-500 -mt-5 -mx-5 mb-5 rounded-t-2xl"></div>
+                <h3 class="text-lg font-bold text-white mb-5">🛡️ 核心重火力 (Core)</h3>
+                <div class="space-y-6" id="list-core"><div class="text-slate-500 text-sm text-center py-10">输入 JSON 后显示...</div></div>
             </div>
-
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                <h3 class="text-lg font-bold text-white mb-5 flex items-center">🏹 常规防御 (Standard)</h3>
-                <div class="space-y-6" id="list-standard"></div>
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50">
+                <div class="w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500 -mt-5 -mx-5 mb-5 rounded-t-2xl"></div>
+                <h3 class="text-lg font-bold text-white mb-5">🏹 常规防御 (Standard)</h3>
+                <div class="space-y-6" id="list-standard"><div class="text-slate-500 text-sm text-center py-10">输入 JSON 后显示...</div></div>
             </div>
-
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-                <h3 class="text-lg font-bold text-white mb-5 flex items-center">💰 资源与军队 (Eco & Army)</h3>
-                <div class="space-y-6" id="list-eco"></div>
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50">
+                <div class="w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500 -mt-5 -mx-5 mb-5 rounded-t-2xl"></div>
+                <h3 class="text-lg font-bold text-white mb-5">💰 资源与军队 (Eco)</h3>
+                <div class="space-y-6" id="list-eco"><div class="text-slate-500 text-sm text-center py-10">输入 JSON 后显示...</div></div>
             </div>
-
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
-                <h3 class="text-lg font-bold text-white mb-5 flex items-center">💣 陷阱与其它 (Traps/Misc)</h3>
-                <div class="space-y-6" id="list-traps"></div>
-            </div>
-
-        </div>
-
-        <div class="bg-coco-card rounded-2xl p-6 border border-slate-700/50 shadow-lg">
-            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
-                🤖 智能诊断建议 (Smart Insights)
-            </h2>
-            <div class="space-y-3">
-                <div class="bg-red-950/30 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <div>
-                        <p class="text-red-200 font-bold">防空能力出现明显短板</p>
-                        <p class="text-red-300/80 text-sm mt-1">数据显示你的【防空火箭】有半数仍停留在低等级，且【搜空地雷】整体滞后。这在高本部落战中是致命弱点，建议立即列为最高优先级。</p>
-                    </div>
-                </div>
-                <div class="bg-yellow-950/30 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                        <p class="text-yellow-200 font-bold">下一步操作建议</p>
-                        <p class="text-yellow-300/80 text-sm mt-1">你的资源设施已全部满级，无需再投入精力。核心防御接近完工。建议在核心防御升级的漫长等待期内，用多余资源全力补齐陷阱和刷墙。</p>
-                    </div>
-                </div>
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50">
+                <div class="w-full h-1 bg-gradient-to-r from-orange-500 to-yellow-500 -mt-5 -mx-5 mb-5 rounded-t-2xl"></div>
+                <h3 class="text-lg font-bold text-white mb-5">💣 陷阱与其它 (Traps)</h3>
+                <div class="space-y-6" id="list-traps"><div class="text-slate-500 text-sm text-center py-10">输入 JSON 后显示...</div></div>
             </div>
         </div>
-        
-        <footer class="mt-8 text-center text-slate-500 text-sm">
-            © 2024 COC Dashboard Final Version. Designed for Chiefs.
-        </footer>
-
     </div>
 
-   <script>
-        // 1. 静态数据库 (全面升级为 TH18 满级标准)
-        // 数据参考自 TH18 更新及 2026 年 2 月最新平衡性补丁
+    <script>
+        // 1. 静态数据库 (TH18 满防标准)
         const COC_DB = {
-            // 🛡️ 核心防御 (Core Defenses)
             1000031: { name: "天鹰火炮", cat: "core", weight: 5, maxLvl: 7 },
             1000067: { name: "投石机", cat: "core", weight: 5, maxLvl: 6 },
             1000027: { name: "地狱塔", cat: "core", weight: 4, maxLvl: 12 },
             1000021: { name: "X连弩", cat: "core", weight: 4, maxLvl: 12 },
-            1000077: { name: "巨石碑 (Monolith)", cat: "core", weight: 5, maxLvl: 4 },
-            1000072: { name: "法术塔", cat: "core", weight: 4, maxLvl: 4 }, // 2026年2月新等级
-            1000097: { name: "融合防御/守护者", cat: "core", weight: 5, maxLvl: 4 }, // TH18 守护者/特殊合成通用位
+            1000077: { name: "巨石碑", cat: "core", weight: 5, maxLvl: 4 },
+            1000072: { name: "法术塔", cat: "core", weight: 4, maxLvl: 4 }, 
             
-            // 🏹 常规防御 (Standard Defenses)
-            1000012: { name: "防空火箭", cat: "standard", weight: 3, maxLvl: 16 }, // TH18 新等级
+            1000012: { name: "防空火箭", cat: "standard", weight: 3, maxLvl: 16 },
             1000009: { name: "箭塔", cat: "standard", weight: 2, maxLvl: 21 },
             1000008: { name: "加农炮", cat: "standard", weight: 2, maxLvl: 21 },
-            1000011: { name: "法师塔", cat: "standard", weight: 3, maxLvl: 17 }, // (可融合成 Super Wizard Tower)
+            1000011: { name: "法师塔", cat: "standard", weight: 3, maxLvl: 17 },
             1000013: { name: "迫击炮", cat: "standard", weight: 2, maxLvl: 18 },
             1000019: { name: "隐藏电塔", cat: "standard", weight: 2, maxLvl: 17 },
             1000028: { name: "吹风机", cat: "standard", weight: 2, maxLvl: 7 },
-            1000032: { name: "炸弹塔", cat: "standard", weight: 3, maxLvl: 12 }, // TH18 新等级
-            1000084: { name: "多管箭塔", cat: "standard", weight: 4, maxLvl: 4 }, // TH18 新等级
-            1000085: { name: "跳弹加农炮", cat: "standard", weight: 4, maxLvl: 4 }, // TH18 新等级
-            1000089: { name: "喷火塔 (Firespitter)", cat: "standard", weight: 4, maxLvl: 3 }, // 2026年2月新等级
-            1000079: { name: "多管齿轮塔 (Multi-Gear)", cat: "standard", weight: 4, maxLvl: 3 }, // TH18 新等级
-
-            // 💰 资源与科技 (Economy & Army)
+            1000032: { name: "炸弹塔", cat: "standard", weight: 3, maxLvl: 12 },
+            1000084: { name: "多管箭塔", cat: "standard", weight: 4, maxLvl: 4 },
+            1000085: { name: "跳弹加农炮", cat: "standard", weight: 4, maxLvl: 4 },
+            
             1000000: { name: "兵营", cat: "eco", weight: 3, maxLvl: 13 },
-            1000007: { name: "实验室", cat: "eco", weight: 3, maxLvl: 16 }, // TH18 新等级
+            1000007: { name: "实验室", cat: "eco", weight: 3, maxLvl: 16 },
             1000068: { name: "战宠小屋", cat: "eco", weight: 3, maxLvl: 12 },
             1000070: { name: "铁匠铺", cat: "eco", weight: 3, maxLvl: 9 },
             1000004: { name: "金矿", cat: "eco", weight: 1, maxLvl: 17 },
             1000002: { name: "圣水收集器", cat: "eco", weight: 1, maxLvl: 17 },
-            1000005: { name: "储金罐", cat: "eco", weight: 2, maxLvl: 19 }, // TH18 新等级
-            1000003: { name: "圣水瓶", cat: "eco", weight: 2, maxLvl: 19 }, // TH18 新等级
-            1000024: { name: "暗黑重油罐", cat: "eco", weight: 2, maxLvl: 13 }, // TH18 新等级
-            1000014: { name: "部落城堡", cat: "eco", weight: 3, maxLvl: 14 }, // TH18 新等级
-            1000006: { name: "训练营", cat: "eco", weight: 3, maxLvl: 19 }, // TH18 新等级
-            1000020: { name: "法术工厂", cat: "eco", weight: 3, maxLvl: 9 }, // TH18 新等级，解锁 Totem Spell
-            1000071: { name: "英雄大厅", cat: "eco", weight: 3, maxLvl: 12 }, // TH18 新等级
-
-            // 💣 陷阱与其它 (Traps)
-            1000010: { name: "城墙", cat: "traps", weight: 0.1, maxLvl: 19 }, // TH18 新等级
+            1000005: { name: "储金罐", cat: "eco", weight: 2, maxLvl: 19 },
+            1000003: { name: "圣水瓶", cat: "eco", weight: 2, maxLvl: 19 },
+            1000024: { name: "暗黑重油罐", cat: "eco", weight: 2, maxLvl: 13 },
+            1000014: { name: "部落城堡", cat: "eco", weight: 3, maxLvl: 14 },
+            1000006: { name: "训练营", cat: "eco", weight: 3, maxLvl: 19 },
+            1000020: { name: "法术工厂", cat: "eco", weight: 3, maxLvl: 9 },
+            
+            1000010: { name: "城墙", cat: "traps", weight: 0.1, maxLvl: 19 },
             12000000: { name: "隐形炸弹", cat: "traps", weight: 1, maxLvl: 14 },
             12000002: { name: "巨型炸弹", cat: "traps", weight: 1.5, maxLvl: 12 },
             12000005: { name: "空中炸弹", cat: "traps", weight: 1.5, maxLvl: 13 },
-            12000006: { name: "搜空地雷", cat: "traps", weight: 1.5, maxLvl: 8 }, // 2026年2月新等级
-            12000016: { name: "飓风陷阱", cat: "traps", weight: 2, maxLvl: 3 },
-            12000020: { name: "千兆炸弹 (Giga Bomb)", cat: "traps", weight: 1.5, maxLvl: 4 } // 2026年2月新等级
+            12000006: { name: "搜空地雷", cat: "traps", weight: 1.5, maxLvl: 8 },
+            12000016: { name: "飓风陷阱", cat: "traps", weight: 2, maxLvl: 3 }
         };
 
         let myChart = null; 
@@ -269,7 +183,7 @@
 
             inventory.forEach((levelsArr, id) => {
                 const dbInfo = COC_DB[id];
-                const maxLvl = dbInfo.maxLvl; // 变更为读取 maxLvl
+                const maxLvl = dbInfo.maxLvl; 
                 
                 const levelCounts = {};
                 levelsArr.forEach(l => { levelCounts[l] = (levelCounts[l] || 0) + 1; });
@@ -375,6 +289,14 @@
         }
 
         document.getElementById('btnAnalyze').addEventListener('click', analyzeData);
+
+        // 页面刚加载时画一个空的灰圈
+        const ctx = document.getElementById('overallChart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { datasets: [{ data: [0, 100], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0, borderRadius: 10, cutout: '80%' }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, tooltip: false } }
+        });
     </script>
 </body>
 </html>
