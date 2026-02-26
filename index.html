@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COC 全景指挥舱 V7.1 - 视觉防弹版</title>
+    <title>COC 全景指挥舱 V8.0 - 完美防弹版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -29,10 +29,7 @@
             .tag-critical { @apply bg-red-900/40 text-red-400 border-red-700/50; }
             .glass { @apply bg-opacity-80 backdrop-blur-2xl border-slate-800/60 shadow-lg; }
             
-            /* 图片和占位符的基础样式 */
             .item-icon { @apply w-10 h-10 rounded-lg object-contain bg-slate-800/50 p-1 border border-slate-700/50 shrink-0; }
-            .fallback-icon { @apply w-10 h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 flex items-center justify-center text-slate-300 text-sm font-black shrink-0 shadow-inner; }
-            
             .auto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
         }
     </style>
@@ -47,7 +44,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight">部落冲突 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">全景指挥舱</span></h1>
-                    <p class="text-xs text-slate-400 tracking-wider mt-1">V7.1 防弹视觉版 | 自动修正碎裂图标</p>
+                    <p class="text-xs text-slate-400 tracking-wider mt-1">V8.0 完美解包版 | 自动生成矢量图标</p>
                 </div>
             </div>
             
@@ -132,19 +129,11 @@
     </div>
 
     <script>
-        // 核心黑科技：图片加载失败时，自动转化为优雅的 CSS 字母头像
-        function handleImgError(imgElement, itemName) {
-            // 取名称的第一个字作为图标
-            const firstChar = itemName.charAt(0);
-            const parent = imgElement.parentNode;
-            
-            // 创建一个替代的 div
-            const fallbackDiv = document.createElement('div');
-            fallbackDiv.className = 'fallback-icon';
-            fallbackDiv.innerText = firstChar;
-            
-            // 替换碎裂的图片
-            parent.replaceChild(fallbackDiv, imgElement);
+        // 核心黑科技 1：内存直接生成 SVG 字母头像，绝对防弹防碎裂！
+        function getFallbackSVG(name) {
+            const char = name ? name.charAt(0) : '?';
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#1e293b" rx="20"/><text x="50" y="50" font-family="sans-serif" font-size="50" font-weight="bold" fill="#94a3b8" text-anchor="middle" dominant-baseline="central">${char}</text></svg>`;
+            return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
         }
 
         const COC_DB = {
@@ -154,33 +143,65 @@
             1000021: { name: "X连弩", cat: "core", weight: 4, max: 12, icon: "https://static.wikia.nocookie.net/clashofclans/images/6/67/X-Bow11_Ground.png" },
             1000077: { name: "巨石碑", cat: "core", weight: 5, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/0/05/Monolith3.png" },
             1000072: { name: "法术塔", cat: "core", weight: 4, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/f/f3/Spell_Tower3.png" },
-            1000097: { name: "合成防御集群", cat: "core", weight: 5, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/f/fe/Multi-Archer_Tower2.png" },
+            
+            // TH16/TH17/TH18 合成防御解析 ID
+            103000001: { name: "跳弹加农炮", cat: "standard", weight: 4, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/2/23/Ricochet_Cannon2.png" },
+            103000002: { name: "多管箭塔", cat: "standard", weight: 4, max: 4, icon: "https://static.wikia.nocookie.net/clashofclans/images/f/fe/Multi-Archer_Tower2.png" },
             
             1000012: { name: "防空火箭", cat: "standard", weight: 3, max: 16, icon: "https://static.wikia.nocookie.net/clashofclans/images/b/ba/Air_Defense14.png" },
             1000009: { name: "箭塔", cat: "standard", weight: 2, max: 21, icon: "https://static.wikia.nocookie.net/clashofclans/images/6/66/Archer_Tower21.png" },
             1000008: { name: "加农炮", cat: "standard", weight: 2, max: 21, icon: "https://static.wikia.nocookie.net/clashofclans/images/9/91/Cannon21.png" },
             1000011: { name: "法师塔", cat: "standard", weight: 3, max: 17, icon: "https://static.wikia.nocookie.net/clashofclans/images/1/15/Wizard_Tower16.png" },
             1000019: { name: "隐藏电磁塔", cat: "standard", weight: 2, max: 17, icon: "https://static.wikia.nocookie.net/clashofclans/images/b/b1/Hidden_Tesla14.png" },
+            1000013: { name: "迫击炮", cat: "standard", weight: 2, max: 18, icon: "" },
+            1000028: { name: "空气炮", cat: "standard", weight: 2, max: 7, icon: "" },
+            1000032: { name: "炸弹塔", cat: "standard", weight: 3, max: 12, icon: "" },
             
             28000000: { name: "野蛮人之王", cat: "tech", weight: 5, max: 105, icon: "https://static.wikia.nocookie.net/clashofclans/images/8/87/Barbarian_King_info.png" },
             28000001: { name: "弓箭女皇", cat: "tech", weight: 5, max: 105, icon: "https://static.wikia.nocookie.net/clashofclans/images/e/ed/Archer_Queen_info.png" },
             28000002: { name: "大守护者", cat: "tech", weight: 5, max: 80, icon: "https://static.wikia.nocookie.net/clashofclans/images/a/a2/Grand_Warden_info.png" },
             28000004: { name: "飞盾战神", cat: "tech", weight: 5, max: 55, icon: "https://static.wikia.nocookie.net/clashofclans/images/a/ae/Royal_Champion_info.png" },
 
-            // 针对你截图里暴露出的常见 ID 进行中文化映射 (不再显示冰冷的数字)
-            9000001: { name: "弓箭手木偶", cat: "equip", weight: 2, max: 18 },
+            // 中文图鉴大补全
+            9000001: { name: "野蛮人木偶", cat: "equip", weight: 2, max: 18 },
             9000003: { name: "狂暴药瓶", cat: "equip", weight: 2, max: 18 },
             9000007: { name: "地震靴", cat: "equip", weight: 2, max: 18 },
             9000010: { name: "隐形药瓶", cat: "equip", weight: 2, max: 18 },
             9000024: { name: "治疗书", cat: "equip", weight: 2, max: 18 },
+            9000032: { name: "冰冻之箭", cat: "equip", weight: 2, max: 27 },
+            9000039: { name: "火球", cat: "equip", weight: 2, max: 27 },
+            9000041: { name: "尖刺盾牌", cat: "equip", weight: 2, max: 27 },
             9000043: { name: "永恒书", cat: "equip", weight: 2, max: 18 },
             9000048: { name: "巨大手套", cat: "equip", weight: 2, max: 27 },
-            7300009: { name: "独角 (Unicorn)", cat: "tech", weight: 2, max: 10 },
-            7300011: { name: "挖挖 (Diggy)", cat: "tech", weight: 2, max: 10 },
-            7300016: { name: "灵狐 (Spirit Fox)", cat: "tech", weight: 2, max: 10 }
-        };
+            9000052: { name: "魔法镜", cat: "equip", weight: 2, max: 27 },
+            9000053: { name: "电击靴", cat: "equip", weight: 2, max: 27 },
+            
+            7300009: { name: "独角", cat: "tech", weight: 2, max: 10 },
+            7300011: { name: "挖挖", cat: "tech", weight: 2, max: 10 },
+            7300016: { name: "灵狐", cat: "tech", weight: 2, max: 10 },
+            7300021: { name: "愤怒果冻", cat: "tech", weight: 2, max: 10 },
 
-        const DEFAULT_ICON = "invalid_url_to_trigger_fallback.png"; // 故意触发 fallback 生成优雅的文字图标
+            4000110: { name: "根蔓骑士", cat: "tech", weight: 1, max: 3 },
+            4000082: { name: "雷电泰坦", cat: "tech", weight: 1, max: 3 },
+            
+            1000000: { name: "兵营", cat: "eco", weight: 3, max: 13 },
+            1000007: { name: "实验室", cat: "eco", weight: 3, max: 16 },
+            1000068: { name: "战宠小屋", cat: "eco", weight: 3, max: 12 },
+            1000070: { name: "铁匠铺", cat: "eco", weight: 3, max: 9 },
+            1000004: { name: "金矿", cat: "eco", weight: 1, max: 17 },
+            1000002: { name: "圣水收集器", cat: "eco", weight: 1, max: 17 },
+            1000005: { name: "储金罐", cat: "eco", weight: 2, max: 19 },
+            1000003: { name: "圣水瓶", cat: "eco", weight: 2, max: 19 },
+            1000024: { name: "暗黑油罐", cat: "eco", weight: 2, max: 13 },
+            1000014: { name: "部落城堡", cat: "eco", weight: 3, max: 14 },
+            
+            1000010: { name: "城墙", cat: "traps", weight: 0.1, max: 19 },
+            12000000: { name: "隐形炸弹", cat: "traps", weight: 1, max: 14 },
+            12000002: { name: "巨型炸弹", cat: "traps", weight: 1.5, max: 12 },
+            12000005: { name: "空中炸弹", cat: "traps", weight: 1.5, max: 13 },
+            12000006: { name: "搜空地雷", cat: "traps", weight: 1.5, max: 8 },
+            12000016: { name: "飓风陷阱", cat: "traps", weight: 2, max: 3 }
+        };
 
         let myChart = null;
 
@@ -193,14 +214,24 @@
             document.getElementById('playerTag').textContent = "TAG: " + (data.tag || "Unknown");
             
             const inventory = new Map();
-            const allItems = [
-                ...(data.buildings || []), ...(data.traps || []), ...(data.units || []), 
-                ...(data.spells || []), ...(data.heroes || []), ...(data.siege_machines || []),
-                ...(data.pets || []), ...(data.equipment || [])
-            ];
-            
             let wallTotal = 0, wallMax = 0;
             let ignoredEquipCount = 0;
+
+            // 核心黑科技 2：合成防御 (1000097) 深度解包算法
+            const allItems = [];
+            (data.buildings || []).forEach(b => {
+                if (b.data === 1000097 && b.types) {
+                    b.types.forEach(t => {
+                        let innerMaxLvl = 0;
+                        (t.modules || []).forEach(m => { if ((m.lvl || 0) > innerMaxLvl) innerMaxLvl = m.lvl; });
+                        allItems.push({ data: t.data, lvl: innerMaxLvl, cnt: 1 });
+                    });
+                } else {
+                    allItems.push(b);
+                }
+            });
+            
+            allItems.push(...(data.traps || []), ...(data.units || []), ...(data.spells || []), ...(data.heroes || []), ...(data.siege_machines || []), ...(data.pets || []), ...(data.equipment || []));
 
             allItems.forEach(item => {
                 if (item.data === 1000010) {
@@ -214,18 +245,16 @@
                 
                 if (strId.startsWith("9000")) {
                     const lvl = item.lvl || 0;
-                    if (lvl < 3) {
-                        ignoredEquipCount++;
-                        return; 
-                    }
-                    if(!COC_DB[item.data]) COC_DB[item.data] = { name: "史诗装备 " + strId.slice(-3), cat: "equip", weight: 2, max: 27, icon: DEFAULT_ICON };
+                    if (lvl < 3) { ignoredEquipCount++; return; }
+                    if(!COC_DB[item.data]) COC_DB[item.data] = { name: "史诗装备 " + strId.slice(-3), cat: "equip", weight: 2, max: 27, icon: "" };
                 }
 
                 if(!COC_DB[item.data]) {
-                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "高级兵种 " + strId.slice(-3), cat: "tech", weight: 1, max: 14, icon: DEFAULT_ICON };
-                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "秘法药水 " + strId.slice(-3), cat: "tech", weight: 1, max: 12, icon: DEFAULT_ICON };
-                    else if (strId.startsWith("7300")) COC_DB[item.data] = { name: "战宠伴侣 " + strId.slice(-3), cat: "tech", weight: 2, max: 15, icon: DEFAULT_ICON };
-                    else if (strId.startsWith("1000")) COC_DB[item.data] = { name: "阵营基建", cat: "eco", weight: 1, max: 15, icon: DEFAULT_ICON }; 
+                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "高级兵种 " + strId.slice(-3), cat: "tech", weight: 1, max: 14, icon: "" };
+                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "秘法药水 " + strId.slice(-3), cat: "tech", weight: 1, max: 12, icon: "" };
+                    else if (strId.startsWith("7300")) COC_DB[item.data] = { name: "战宠伴侣 " + strId.slice(-3), cat: "tech", weight: 2, max: 15, icon: "" };
+                    else if (strId.startsWith("1030")) COC_DB[item.data] = { name: "合成防御 " + strId.slice(-3), cat: "standard", weight: 4, max: 4, icon: "" };
+                    else if (strId.startsWith("1000")) COC_DB[item.data] = { name: "阵营基建", cat: "eco", weight: 1, max: 15, icon: "" }; 
                     else return; 
                 }
 
@@ -264,11 +293,13 @@
                 cats[info.cat].s += p * weight; cats[info.cat].w += weight;
 
                 if (!isMaxed && (info.cat === 'core' || info.cat === 'standard')) {
-                    if (!urgentTarget || p < urgentTarget.p) urgentTarget = { name: info.name, p: p, icon: info.icon || DEFAULT_ICON, max: info.max, minLvl: Math.min(...lvls) };
+                    if (!urgentTarget || p < urgentTarget.p) urgentTarget = { name: info.name, p: p, icon: info.icon || getFallbackSVG(info.name), max: info.max, minLvl: Math.min(...lvls) };
                 }
 
                 uiData[info.cat].push({ 
-                    name: info.name, p, isMaxed, icon: info.icon || DEFAULT_ICON,
+                    name: info.name, p, isMaxed, 
+                    // 核心修复：应用自动 SVG 降级
+                    icon: info.icon || getFallbackSVG(info.name),
                     color: info.cat==='core'?'purple':(info.cat==='eco'?'green':(info.cat==='traps'?'orange':(info.cat==='tech'?'pink':(info.cat==='equip'?'cyan':'blue')))), 
                     tags 
                 });
@@ -276,8 +307,7 @@
 
             const container = document.getElementById('urgentIconContainer');
             if (urgentTarget) {
-                // 如果有图，渲染图；图裂了，触发 onerror 变成文字占位符
-                container.innerHTML = `<img src="${urgentTarget.icon}" onerror="handleImgError(this, '${urgentTarget.name}')" class="w-full h-full object-contain p-1" alt="icon">`;
+                container.innerHTML = `<img src="${urgentTarget.icon}" onerror="this.onerror=null; this.src=getFallbackSVG('${urgentTarget.name}');" class="w-full h-full object-contain p-1 rounded-lg bg-slate-800" alt="icon">`;
                 document.getElementById('insightTitle').innerHTML = `<span class="text-red-400">${urgentTarget.name}</span>`;
                 document.getElementById('insightDesc').innerHTML = `当前最低仅 <b>Lv${urgentTarget.minLvl}</b> (满级 Lv${urgentTarget.max})，建议立刻安排工人升级。`;
             } else {
@@ -310,11 +340,10 @@
                 const maxed = data[cat].filter(i => i.isMaxed);
 
                 let html = '';
-                // 渲染未满项目，加入了 onerror 拦截器
                 html += notMaxed.map(item => `
                     <div class="flex gap-3 items-center group">
                         <div class="shrink-0 relative">
-                            <img src="${item.icon}" onerror="handleImgError(this, '${item.name}')" class="item-icon" alt="${item.name}">
+                            <img src="${item.icon}" onerror="this.onerror=null; this.src=getFallbackSVG('${item.name}');" class="item-icon" alt="${item.name}">
                         </div>
                         <div class="flex-grow min-w-0">
                             <div class="flex justify-between items-end mb-1">
