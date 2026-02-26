@@ -1,55 +1,356 @@
-<div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                <h3 class="text-lg font-bold text-white mb-5 flex items-center">
-                    🏹 常规防御 (Standard)
-                </h3>
-                <div class="space-y-6"> <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300 font-medium">防空火箭 (Air Def)</span>
-                            <span class="font-mono text-red-400">70% (严重滞后)</span>
-                        </div>
-                        <div class="progress-track mb-2"><div class="progress-fill bg-red-500" style="width: 70%"></div></div>
-                        <div class="flex flex-wrap gap-1.5">
-                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-700 text-slate-300 border border-slate-600">
-                                Lv12 × 1
-                            </span>
-                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-red-500/20 text-red-400 border border-red-500/30">
-                                Lv10 × 3
-                            </span>
-                        </div>
-                    </div>
+<!DOCTYPE html>
+<html lang="zh-Hans" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COC 账号全景指挥舱 - 最终版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 配置 Tailwind 的扩展颜色，让它更符合 COC 的风格
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        coco: {
+                            bg: '#0f172a',    // 深色背景
+                            card: '#1e293b',  // 卡片背景
+                            accent: '#3b82f6',// 强调蓝
+                            purple: '#8b5cf6',// 核心防御紫
+                            green: '#22c55e', // 资源绿
+                            orange: '#f97316',// 陷阱橙
+                            red: '#ef4444',   // 警告红
+                        }
+                    },
+                    fontFamily: {
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', '"Liberation Mono"', '"Courier New"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 自定义进度条样式 */
+            .progress-track {
+                @apply h-3 bg-slate-700/50 rounded-full overflow-hidden;
+            }
+            .progress-fill {
+                @apply h-full rounded-full transition-all duration-1000 ease-out;
+            }
+            /* 自定义标签样式 */
+            .level-tag {
+                @apply px-2 py-0.5 rounded text-[11px] font-mono border;
+            }
+            .tag-maxed {
+                @apply bg-blue-500/20 text-blue-400 border-blue-500/30;
+            }
+            .tag-normal {
+                @apply bg-slate-700 text-slate-300 border-slate-600;
+            }
+            .tag-lagging {
+                @apply bg-yellow-500/20 text-yellow-400 border-yellow-500/30;
+            }
+            .tag-critical {
+                @apply bg-red-500/20 text-red-400 border-red-500/30;
+            }
+        }
+        body { background-color: theme('colors.coco.bg'); }
+    </style>
+</head>
+<body class="text-slate-200 p-4 md:p-8 font-sans antialiased">
 
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300 font-medium">箭塔 (Archer Tower)</span>
-                            <span class="font-mono text-coco-accent">88%</span>
-                        </div>
-                        <div class="progress-track mb-2"><div class="progress-fill bg-coco-accent" style="width: 88%"></div></div>
-                        <div class="flex flex-wrap gap-1.5">
-                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                                Lv21(满) × 4
-                            </span>
-                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-700 text-slate-300 border border-slate-600">
-                                Lv20 × 2
-                            </span>
-                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                                Lv18 × 2
-                            </span>
-                        </div>
-                    </div>
+    <div class="max-w-7xl mx-auto">
+        
+        <header class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                    COC 账号全景指挥舱
+                    <span class="text-coco-accent">Dashboard</span>
+                </h1>
+                <p class="text-slate-400 mt-2">
+                    玩家 Tag: <span class="font-mono text-white bg-slate-800 px-2 py-1 rounded" id="playerTag">#GCLU0Q80R</span>
+                    | 当前目标: <span class="text-coco-accent font-bold" id="targetTH">TH16 满防</span>
+                </p>
+            </div>
+        </header>
 
-                     <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300 font-medium">电塔 (Tesla)</span>
-                            <span class="font-mono text-slate-500">100% (已满)</span>
-                        </div>
-                        <div class="progress-track mb-2"><div class="progress-fill bg-slate-600/50" style="width: 100%"></div></div>
-                        <div class="flex flex-wrap gap-1.5">
-                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
-                                Lv14(满) × 5
-                            </span>
-                        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            <div class="lg:col-span-4 bg-coco-card rounded-2xl shadow-2xl p-6 border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-coco-accent/20 blur-[60px] rounded-full"></div>
+                
+                <h2 class="text-xl font-bold text-white mb-6">综合加权完成度</h2>
+                <div class="relative w-full max-w-[280px] mx-auto aspect-square">
+                    <canvas id="overallChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-5xl font-black text-white leading-none" id="overallText">0%</span>
+                        <span class="text-sm text-slate-400 mt-2 font-medium">综合评分</span>
                     </div>
-
                 </div>
             </div>
+
+            <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-purple shadow-lg flex flex-col justify-center">
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">关键防御短板</div>
+                    <div class="text-2xl font-bold text-white" id="keyShortfallTitle">-</div>
+                    <div class="mt-3 flex items-center text-sm">
+                        <span class="flex w-2 h-2 rounded-full bg-red-500 mr-2" id="keyShortfallDot"></span>
+                        <span class="text-red-400" id="keyShortfallDesc">-</span>
+                    </div>
+                </div>
+                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-green shadow-lg flex flex-col justify-center">
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">资源与科技基础</div>
+                    <div class="text-2xl font-bold text-white" id="resourceStatusTitle">-</div>
+                    <div class="mt-3 text-sm text-slate-400" id="resourceStatusDesc">
+                        -
+                    </div>
+                </div>
+                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-orange shadow-lg flex flex-col justify-center">
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">预计满防所需时间</div>
+                    <div class="text-2xl font-bold text-white" id="timeEstimateTitle">-</div>
+                    <div class="mt-3 text-sm text-slate-400" id="timeEstimateDesc">
+                        -
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-coco-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6v12M14 6v12M4 10h16M4 14h16" />
+            </svg>
+            分类进度详情
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                <h3 class="text-lg font-bold text-white mb-5 flex items-center">🛡️ 核心重火力 (Core)</h3>
+                <div class="space-y-6" id="list-core"></div>
+            </div>
+
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                <h3 class="text-lg font-bold text-white mb-5 flex items-center">🏹 常规防御 (Standard)</h3>
+                <div class="space-y-6" id="list-standard"></div>
+            </div>
+
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500"></div>
+                <h3 class="text-lg font-bold text-white mb-5 flex items-center">💰 资源与军队 (Eco & Army)</h3>
+                <div class="space-y-6" id="list-eco"></div>
+            </div>
+
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
+                <h3 class="text-lg font-bold text-white mb-5 flex items-center">💣 陷阱与其它 (Traps/Misc)</h3>
+                <div class="space-y-6" id="list-traps"></div>
+            </div>
+
+        </div>
+
+        <div class="bg-coco-card rounded-2xl p-6 border border-slate-700/50 shadow-lg">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                🤖 智能诊断建议 (Smart Insights)
+            </h2>
+            <div class="space-y-3">
+                <div class="bg-red-950/30 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                        <p class="text-red-200 font-bold">防空能力出现明显短板</p>
+                        <p class="text-red-300/80 text-sm mt-1">数据显示你的【防空火箭】有半数仍停留在低等级，且【搜空地雷】整体滞后。这在高本部落战中是致命弱点，建议立即列为最高优先级。</p>
+                    </div>
+                </div>
+                <div class="bg-yellow-950/30 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <p class="text-yellow-200 font-bold">下一步操作建议</p>
+                        <p class="text-yellow-300/80 text-sm mt-1">你的资源设施已全部满级，无需再投入精力。核心防御接近完工。建议在核心防御升级的漫长等待期内，用多余资源全力补齐陷阱和刷墙。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-8 text-center text-slate-500 text-sm">
+            © 2024 COC Dashboard Final Version. Designed for Chiefs.
+        </footer>
+
+    </div>
+
+    <script>
+        // 1. 准备模拟数据 (Sample Data)
+        // 这是未来的解析器需要输出的标准数据格式
+        const sampleData = {
+            playerTag: "#GCLU0Q80R",
+            targetTH: 16,
+            overallProgress: 82, // 综合加权进度
+            summary: {
+                shortfall: { title: "防空火箭 (Air Def)", desc: "平均落后 TH16 标准 2.5 级" },
+                resource: { title: "完美基建 (Maxed)", desc: "所有采集器与储罐均已满级" },
+                time: { title: "≈ 2 个月", desc: "基于 6 工人满负荷估算" }
+            },
+            categories: {
+                core: [
+                    { 
+                        name: "天鹰火炮 (Eagle)", percent: 90, status: "未满", color: "coco-purple",
+                        tags: [{ text: "Lv6 × 1", type: "normal" }] // TH16 满级是 Lv7
+                    },
+                    { 
+                        name: "投石机 (Scattershot)", percent: 85, status: "未满", color: "coco-purple",
+                        tags: [{ text: "Lv4 × 2", type: "normal" }] // TH16 满级是 Lv5
+                    },
+                    { 
+                        name: "地狱塔 (Inferno)", percent: 100, status: "已满", color: "slate-500", isMaxed: true,
+                        tags: [{ text: "Lv9(满) × 3", type: "maxed" }]
+                    }
+                ],
+                standard: [
+                    { 
+                        name: "防空火箭 (Air Def)", percent: 70, status: "严重滞后", color: "red-500",
+                        tags: [
+                            { text: "Lv12 × 1", type: "normal" },
+                            { text: "Lv10 × 3", type: "critical" } // 用红色高亮严重落后的
+                        ]
+                    },
+                    { 
+                        name: "箭塔 (Archer Tower)", percent: 88, status: "未满", color: "coco-accent",
+                        tags: [
+                            { text: "Lv21(满) × 4", type: "maxed" }, // 满级高亮
+                            { text: "Lv20 × 2", type: "normal" },
+                            { text: "Lv18 × 2", type: "lagging" }
+                        ]
+                    },
+                    { 
+                        name: "电塔 (Tesla)", percent: 100, status: "已满", color: "slate-500", isMaxed: true,
+                        tags: [{ text: "Lv14(满) × 5", type: "maxed" }]
+                    }
+                ],
+                eco: [
+                    { 
+                        name: "兵营 (Army Camp)", percent: 100, status: "已满", color: "coco-green", isMaxed: true,
+                        tags: [{ text: "Lv12(满) × 4", type: "maxed" }]
+                    },
+                    { 
+                        name: "金矿/水泵 (Collectors)", percent: 100, status: "已满", color: "coco-green", isMaxed: true,
+                        tags: [{ text: "Lv15(满) × 14", type: "maxed" }]
+                    },
+                    { 
+                        name: "储金/水罐 (Storages)", percent: 100, status: "已满", color: "coco-green", isMaxed: true,
+                        tags: [{ text: "Lv17(满) × 8", type: "maxed" }]
+                    }
+                ],
+                traps: [
+                    { 
+                        name: "巨型炸弹 (Giant Bomb)", percent: 60, status: "滞后", color: "coco-orange",
+                        tags: [
+                            { text: "Lv9 × 2", type: "lagging" },
+                            { text: "Lv8 × 4", type: "lagging" }
+                        ]
+                    },
+                    { 
+                        name: "搜空地雷 (SAM)", percent: 50, status: "严重滞后", color: "red-500",
+                        tags: [{ text: "Lv6 × 8", type: "critical" }]
+                    },
+                    { 
+                        name: "城墙总体 (Walls)", percent: 45, status: "路漫漫", color: "coco-orange",
+                        tags: [
+                            { text: "Lv17(满) × 20", type: "maxed" },
+                            { text: "Lv16 × 150", type: "normal" },
+                            { text: "Lv15 × 154", type: "lagging" }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // 2. 渲染函数：将数据填充到界面
+        function renderDashboard(data) {
+            // 填充头部信息
+            document.getElementById('playerTag').textContent = data.playerTag;
+            document.getElementById('targetTH').textContent = `TH${data.targetTH} 满防`;
+
+            // 渲染环形图
+            const ctx = document.getElementById('overallChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        data: [data.overallProgress, 100 - data.overallProgress],
+                        backgroundColor: ['#3b82f6', '#1e293b'],
+                        borderWidth: 0, borderRadius: 10, cutout: '80%'
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, tooltip: false }, animation: { animateRotate: true, duration: 1500 } }
+            });
+            // 数字动画效果
+            let currentNum = 0;
+            const targetNum = data.overallProgress;
+            const numEl = document.getElementById('overallText');
+            const interval = setInterval(() => {
+                if (currentNum >= targetNum) { clearInterval(interval); currentNum = targetNum; }
+                numEl.textContent = currentNum + '%';
+                currentNum++;
+            }, 15);
+
+            // 填充顶部三个状态卡片
+            document.getElementById('keyShortfallTitle').textContent = data.summary.shortfall.title;
+            document.getElementById('keyShortfallDesc').textContent = data.summary.shortfall.desc;
+            document.getElementById('resourceStatusTitle').textContent = data.summary.resource.title;
+            document.getElementById('resourceStatusDesc').textContent = data.summary.resource.desc;
+            document.getElementById('timeEstimateTitle').textContent = data.summary.time.title;
+            document.getElementById('timeEstimateDesc').textContent = data.summary.time.desc;
+
+            // 辅助函数：生成分类列表项的 HTML
+            function renderCategoryList(containerId, items) {
+                const container = document.getElementById(containerId);
+                container.innerHTML = items.map(item => {
+                    // 生成标签 HTML
+                    const tagsHtml = item.tags.map(tag => {
+                        const tagClass = tag.type === 'maxed' ? 'tag-maxed' :
+                                         tag.type === 'critical' ? 'tag-critical' :
+                                         tag.type === 'lagging' ? 'tag-lagging' : 'tag-normal';
+                        return `<span class="level-tag ${tagClass}">${tag.text}</span>`;
+                    }).join('');
+
+                    // 进度条颜色处理 (如果是满级，进度条底色变暗淡)
+                    const bgColorClass = item.isMaxed ? 'bg-slate-600/50' : `bg-${item.color}`;
+                    const textColorClass = item.isMaxed ? 'text-slate-500' : 
+                                           item.color === 'red-500' ? 'text-red-400' : `text-${item.color}`;
+
+                    return `
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span class="text-slate-300 font-medium">${item.name}</span>
+                                <span class="font-mono ${textColorClass}">${item.percent}% (${item.status})</span>
+                            </div>
+                            <div class="progress-track mb-2">
+                                <div class="progress-fill ${bgColorClass}" style="width: ${item.percent}%"></div>
+                            </div>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${tagsHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 渲染四大分类列表
+            renderCategoryList('list-core', data.categories.core);
+            renderCategoryList('list-standard', data.categories.standard);
+            renderCategoryList('list-eco', data.categories.eco);
+            renderCategoryList('list-traps', data.categories.traps);
+        }
+
+        // 3. 执行渲染
+        // 在真实应用中，这里会是先调用解析函数生成数据，再调用 render
+        renderDashboard(sampleData);
+
+    </script>
+</body>
+</html>
