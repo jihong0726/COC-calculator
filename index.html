@@ -1,613 +1,301 @@
-<!doctype html>
-<html lang="zh-Hans">
+<!DOCTYPE html>
+<html lang="zh-Hans" class="dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>COC 满级差多少 - JSON 计算器</title>
-  <style>
-    :root{
-      --bg:#0b1220;
-      --card:#111a2e;
-      --card2:#0f1730;
-      --text:#e6edf7;
-      --muted:#9bb0d1;
-      --line:#223153;
-      --ok:#35d07f;
-      --warn:#ffcc66;
-      --bad:#ff6b6b;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-    }
-    body{ margin:0; font-family:var(--sans); background:linear-gradient(180deg,#070b14 0%, #0b1220 60%, #070b14 100%); color:var(--text); }
-    .wrap{ max-width:1200px; margin:0 auto; padding:20px; }
-    h1{ font-size:20px; margin:0 0 10px; }
-    .sub{ color:var(--muted); font-size:13px; margin-bottom:16px; line-height:1.5; }
-    .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:14px; }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
-    .card{ background:rgba(17,26,46,.82); border:1px solid rgba(34,49,83,.8); border-radius:14px; padding:14px; box-shadow: 0 18px 40px rgba(0,0,0,.25); }
-    textarea{ width:100%; min-height:220px; resize:vertical; background:rgba(5,10,20,.6); border:1px solid var(--line); border-radius:10px; padding:10px; color:var(--text); font-family:var(--mono); font-size:12px; line-height:1.4; box-sizing: border-box;}
-    .row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
-    select, button, input{
-      background:rgba(5,10,20,.6);
-      border:1px solid var(--line);
-      color:var(--text);
-      border-radius:10px;
-      padding:10px 12px;
-      font-size:13px;
-    }
-    button{ cursor:pointer; }
-    button:hover{ border-color:#3a5290; }
-    .pill{ font-family:var(--mono); font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(5,10,20,.45); color:var(--muted); }
-    .kpi{ display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:10px;}
-    @media (max-width: 980px){ .kpi{ grid-template-columns:1fr; } }
-    .k{ background:rgba(15,23,48,.75); border:1px solid rgba(34,49,83,.8); border-radius:12px; padding:12px; }
-    .k .t{ color:var(--muted); font-size:12px; }
-    .k .v{ font-size:18px; margin-top:6px; font-weight:700; }
-    .k .v.ok{ color:var(--ok); }
-    .k .v.warn{ color:var(--warn); }
-    .k .v.bad{ color:var(--bad); }
-    table{ width:100%; border-collapse:collapse; margin-top:10px; }
-    th, td{ text-align:left; padding:10px; border-bottom:1px solid rgba(34,49,83,.7); font-size:13px; }
-    th{ color:var(--muted); font-weight:600; position: sticky; top: 0; background: rgba(17,26,46,0.95); z-index: 1;}
-    tr:hover td{ background:rgba(255,255,255,.03); }
-    .mono{ font-family:var(--mono); }
-    .small{ color:var(--muted); font-size:12px; }
-    .tag{ display:inline-flex; align-items:center; gap:6px; padding:5px 8px; border-radius:999px; border:1px solid rgba(34,49,83,.85); background:rgba(5,10,20,.4); font-size:12px; color:var(--muted); }
-    .dot{ width:8px; height:8px; border-radius:99px; background:var(--muted); }
-    .dot.ok{ background:var(--ok); }
-    .dot.warn{ background:var(--warn); }
-    .dot.bad{ background:var(--bad); }
-    .foot{ margin-top:12px; color:var(--muted); font-size:12px; line-height:1.5; }
-    .two{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    @media (max-width: 980px){ .two{ grid-template-columns:1fr; } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COC 全景指挥舱 Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 配置 Tailwind 的扩展颜色，让它更符合 COC 的风格
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        coco: {
+                            bg: '#0f172a',    // 深色背景
+                            card: '#1e293b',  // 卡片背景
+                            accent: '#3b82f6',// 强调蓝
+                            purple: '#8b5cf6',// 核心防御紫
+                            green: '#22c55e', // 资源绿
+                            orange: '#f97316',// 陷阱橙
+                            red: '#ef4444',   // 警告红
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 自定义进度条样式 */
+            .progress-track {
+                @apply h-3 bg-slate-700/50 rounded-full overflow-hidden;
+            }
+            .progress-fill {
+                @apply h-full rounded-full transition-all duration-1000 ease-out;
+            }
+        }
+        body { background-color: theme('colors.coco.bg'); }
+    </style>
 </head>
-<body>
-  <div class="wrap">
-    <h1>COC 满级差多少 - JSON 计算器（Home Village）</h1>
-    <div class="sub">
-      贴上 Clash of Clans 游戏内 <span class="mono">Settings → More Settings → Data Export</span> 的 JSON。<br/>
-      工具会自动识别你当前 TH，并按目标 TH 计算：每个建筑距离“满级”还差多少（以“剩余等级总和”表示）。
+<body class="text-slate-200 p-4 md:p-8 font-sans">
+
+    <div class="max-w-7xl mx-auto">
+        
+        <header class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+                    COC 账号全景指挥舱
+                    <span class="text-coco-accent">Dashboard</span>
+                </h1>
+                <p class="text-slate-400 mt-2">
+                    玩家 Tag: <span class="font-mono text-white bg-slate-800 px-2 py-1 rounded">#GCLU0Q80R</span> (示例)
+                    | 当前目标: <span class="text-coco-accent font-bold">TH16 满防</span>
+                </p>
+            </div>
+            </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            <div class="lg:col-span-4 bg-coco-card rounded-2xl shadow-2xl p-6 border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-coco-accent/20 blur-[60px] rounded-full"></div>
+                
+                <h2 class="text-xl font-bold text-white mb-6">TH16 综合完成度</h2>
+                <div class="relative w-full max-w-[280px] mx-auto aspect-square">
+                    <canvas id="overallChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-5xl font-black text-white leading-none">82%</span>
+                        <span class="text-sm text-slate-400 mt-2 font-medium">综合评分</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-purple shadow-lg flex flex-col justify-center">
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">防御短板</div>
+                    <div class="text-2xl font-bold text-white">防空火箭 (Air Def)</div>
+                    <div class="mt-3 flex items-center text-sm">
+                        <span class="flex w-2 h-2 rounded-full bg-red-500 mr-2"></span>
+                        <span class="text-red-400">落后 TH16 标准 2 级</span>
+                    </div>
+                </div>
+                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-green shadow-lg flex flex-col justify-center">
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">资源与科技</div>
+                    <div class="text-2xl font-bold text-white">已达标 (Maxed)</div>
+                    <div class="mt-3 text-sm text-slate-400">
+                        兵营、金水罐已满级
+                    </div>
+                </div>
+                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-orange shadow-lg flex flex-col justify-center">
+                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">预计满防时间</div>
+                    <div class="text-2xl font-bold text-white">≈ 2 个月</div>
+                    <div class="mt-3 text-sm text-slate-400">
+                        假设 6 工人不间断工作
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-coco-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6v12M14 6v12M4 10h16M4 14h16" />
+            </svg>
+            分类进度详情
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                    🛡️ 核心重火力 (Core)
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">天鹰火炮 (Eagle)</span>
+                            <span class="font-mono text-coco-purple">90% (未满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-purple" style="width: 90%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">投石机 (Scattershot)</span>
+                            <span class="font-mono text-coco-purple">85% (未满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-purple" style="width: 85%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">地狱塔 (Inferno)</span>
+                            <span class="font-mono text-coco-purple font-bold">100% (已满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-purple-400/30" style="width: 100%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                    🏹 常规防御 (Standard)
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">防空火箭 (Air Def)</span>
+                            <span class="font-mono text-coco-accent">70% (严重滞后)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-red-500" style="width: 70%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">箭塔 (Archer Tower)</span>
+                            <span class="font-mono text-coco-accent">88% (未满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-accent" style="width: 88%"></div></div>
+                    </div>
+                     <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">电塔 (Tesla)</span>
+                            <span class="font-mono text-coco-accent">100% (已满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-blue-400/30" style="width: 100%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500"></div>
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                    💰 资源与军队 (Eco & Army)
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">兵营 (Army Camp)</span>
+                            <span class="font-mono text-coco-green font-bold">100% (已满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-green" style="width: 100%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">金矿/水泵 (Collectors)</span>
+                            <span class="font-mono text-coco-green font-bold">100% (已满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-green" style="width: 100%"></div></div>
+                    </div>
+                     <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">储金/水罐 (Storages)</span>
+                            <span class="font-mono text-coco-green font-bold">100% (已满)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-green" style="width: 100%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
+                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                    💣 陷阱与其它 (Traps/Misc)
+                </h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">巨型炸弹 (Giant Bomb)</span>
+                            <span class="font-mono text-coco-orange">60% (滞后)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-orange" style="width: 60%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">搜空地雷 (SAM)</span>
+                            <span class="font-mono text-coco-orange">50% (严重滞后)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-red-500" style="width: 50%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300">城墙总体 (Walls)</span>
+                            <span class="font-mono text-coco-orange">45% (路漫漫)</span>
+                        </div>
+                        <div class="progress-track"><div class="progress-fill bg-coco-orange" style="width: 45%"></div></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-coco-card rounded-2xl p-6 border border-slate-700/50 shadow-lg">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                🤖 智能诊断建议 (Smart Insights)
+            </h2>
+            <div class="space-y-3">
+                <div class="bg-red-950/30 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                        <p class="text-red-200 font-bold">防空能力严重不足！</p>
+                        <p class="text-red-300/80 text-sm mt-1">你的【防空火箭】和【搜空地雷】平均等级远低于 TH16 标准。建议作为最高优先级升级，否则部落战极易被空军流派三星。</p>
+                    </div>
+                </div>
+                <div class="bg-yellow-950/30 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <p class="text-yellow-200 font-bold">升级策略建议</p>
+                        <p class="text-yellow-300/80 text-sm mt-1">核心防御（天鹰/投石）即将满级。下一个长工期建议安排给【防空火箭】。利用升级期间的空余资源刷【城墙】和补齐【陷阱】。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-8 text-center text-slate-500 text-sm">
+            © 2024 COC Dashboard Prototype. UI Design by CareerAI.
+        </footer>
+
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <div class="row">
-          <span class="pill">输入 JSON</span>
-          <span id="status" class="tag"><span class="dot warn"></span><span>等待输入</span></span>
-          <span id="tagInfo" class="pill" style="display:none;"></span>
-        </div>
-        <textarea id="jsonInput" placeholder="把你的 JSON 贴在这里..."></textarea>
-
-        <div class="row">
-          <button id="btnCalc">计算</button>
-          <button id="btnDemo" title="放入一份小 demo JSON，确认页面正常工作">放入 Demo</button>
-          <button id="btnClear">清空</button>
-
-          <span class="pill">当前 TH：<b id="curTH">-</b></span>
-
-          <label class="pill" style="display:flex; gap:8px; align-items:center;">
-            目标 TH：
-            <select id="targetTH">
-              <option value="18">TH18（满）</option>
-              <option value="17">TH17</option>
-              <option value="16">TH16</option>
-              <option value="15">TH15</option>
-              <option value="14">TH14</option>
-              <option value="13">TH13</option>
-              <option value="12">TH12</option>
-              <option value="11">TH11</option>
-              <option value="10">TH10</option>
-              <option value="9">TH9</option>
-              <option value="8">TH8</option>
-              <option value="7">TH7</option>
-            </select>
-          </label>
-
-          <label class="pill" style="display:flex; gap:8px; align-items:center;">
-            排序：
-            <select id="sortBy">
-              <option value="remain_desc">差最多在前</option>
-              <option value="remain_asc">差最少在前</option>
-              <option value="name_asc">名称 A→Z</option>
-            </select>
-          </label>
-
-          <label class="pill" style="display:flex; gap:8px; align-items:center;">
-            只看未满：
-            <select id="onlyNotMax">
-              <option value="1">是</option>
-              <option value="0">否</option>
-            </select>
-          </label>
-        </div>
-
-        <div class="kpi">
-          <div class="k">
-            <div class="t">统计对象</div>
-            <div class="v" id="kCount">-</div>
-            <div class="small">（buildings + traps）</div>
-          </div>
-          <div class="k">
-            <div class="t">已满数量</div>
-            <div class="v ok" id="kMaxed">-</div>
-            <div class="small">（达到目标 TH 最高等级）</div>
-          </div>
-          <div class="k">
-            <div class="t">总共还差</div>
-            <div class="v warn" id="kRemain">-</div>
-            <div class="small">（剩余等级总和）</div>
-          </div>
-        </div>
-
-        <div class="foot">
-          说明：<br/>
-          - “还差多少”用 <b>Σ(目标最高等级 - 当前等级) × 数量</b> 计算。墙会非常大（正常）。<br/>
-          - 有些新建筑/特殊建筑如果 max 表里没有，会显示为 <b>UnknownMax</b>（你可以很轻松加进去）。
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="two">
-          <div>
-            <div class="row">
-              <span class="pill">结果（未满清单）</span>
-              <span class="pill">UnknownMax：<b id="kUnknown">0</b></span>
-            </div>
-            <div style="max-height:520px; overflow:auto; border-radius:12px; border:1px solid rgba(34,49,83,.6); margin-top: 10px;">
-              <table>
-                <thead>
-                  <tr>
-                    <th>建筑</th>
-                    <th class="mono">dataId</th>
-                    <th>数量</th>
-                    <th>当前等级分布</th>
-                    <th>目标最高</th>
-                    <th>还差</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div>
-            <div class="row">
-              <span class="pill">可自定义 max 表（可选）</span>
-            </div>
-            <div class="small" style="margin: 10px 0;">
-              你可以在这里贴一个 JSON，用来覆盖/补充 maxLevel：<br/>
-              格式：<span class="mono">{ "1000010": 19, "1000004": 17 }</span>
-            </div>
-            <textarea id="overrideInput" placeholder='例如：
-{
-  "1000071": 12,
-  "1000093": 1
-}' style="min-height:210px;"></textarea>
-            <div class="row">
-              <button id="btnApplyOverride">应用覆盖</button>
-              <span class="small" style="flex:1;">覆盖只在本页生效。也可以直接写进代码 MAX_OVERRIDES。</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<script>
-const ID_NAME = {
-  // Defenses
-  1000008: "Cannon",
-  1000009: "Archer Tower",
-  1000013: "Mortar",
-  1000012: "Air Defense",
-  1000011: "Wizard Tower",
-  1000028: "Air Sweeper",
-  1000019: "Hidden Tesla",
-  1000032: "Bomb Tower",
-  1000021: "X-Bow",
-  1000027: "Inferno Tower",
-  1000031: "Eagle Artillery",
-  1000067: "Scattershot",
-  1000015: "Builder's Hut",
-  1000072: "Spell Tower",
-  1000077: "Monolith",
-  1000084: "Multi-Archer Tower",
-  1000085: "Ricochet Cannon",
-  1000079: "Multi-Gear Tower",
-  1000089: "Firespitter",
-  1000097: "Crafted Defense", 
-  
-  // Custom additions for newer Town Halls to prevent Unknown
-  1000086: "B.O.B's Hut",
-
-  // Walls
-  1000010: "Wall",
-
-  // Resources / Army / Key buildings
-  1000004: "Gold Mine",
-  1000002: "Elixir Collector",
-  1000005: "Gold Storage",
-  1000003: "Elixir Storage",
-  1000023: "Dark Elixir Drill",
-  1000024: "Dark Elixir Storage",
-  1000014: "Clan Castle",
-  1000000: "Army Camp",
-  1000006: "Barracks",
-  1000026: "Dark Barracks",
-  1000007: "Laboratory",
-  1000020: "Spell Factory",
-  1000029: "Dark Spell Factory",
-  1000070: "Blacksmith",
-  1000059: "Workshop",
-  1000068: "Pet House",
-  1000071: "Hero Hall",
-  1000001: "Town Hall",
-
-  // Traps
-  12000000: "Bomb",
-  12000001: "Spring Trap",
-  12000002: "Giant Bomb",
-  12000005: "Air Bomb",
-  12000006: "Seeking Air Mine",
-  12000008: "Skeleton Trap",
-  12000016: "Tornado Trap",
-  12000020: "Giga Bomb",
-};
-
-const MAX_BY_NAME = {
-  // Defenses
-  "Cannon":             {7:8, 8:10, 9:11, 10:13, 11:15, 12:17, 13:19, 14:20, 15:21, 16:21, 17:21, 18:21},
-  "Archer Tower":       {7:8, 8:10, 9:11, 10:13, 11:15, 12:17, 13:19, 14:20, 15:21, 16:21, 17:21, 18:21},
-  "Mortar":             {7:5, 8:6, 9:7, 10:8, 11:10, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18},
-  "Air Defense":        {7:5, 8:6, 9:7, 10:8, 11:9, 12:10, 13:11, 14:12, 15:13, 16:14, 17:15, 18:16},
-  "Wizard Tower":       {7:4, 8:6, 9:7, 10:9, 11:10, 12:11, 13:13, 14:14, 15:15, 16:16, 17:17, 18:17},
-  "Air Sweeper":        {8:2, 9:3, 10:4, 11:5, 12:6, 13:7, 14:7, 15:7, 16:7, 17:7, 18:7},
-  "Hidden Tesla":       {7:3, 8:6, 9:7, 10:8, 11:9, 12:10, 13:12, 14:13, 15:14, 16:15, 17:16, 18:17},
-  "Bomb Tower":         {8:2, 9:3, 10:4, 11:6, 12:7, 13:8, 14:9, 15:10, 16:11, 17:12, 18:13},
-  "X-Bow":              {9:3, 10:4, 11:5, 12:6, 13:8, 14:9, 15:10, 16:11, 17:12, 18:12},
-  "Inferno Tower":      {11:3, 12:5, 13:6, 14:7, 15:8, 16:9, 17:10, 18:12},
-  "Eagle Artillery":    {11:2, 12:3, 13:4, 14:5, 15:6, 16:7},
-  "Scattershot":        {13:2, 14:3, 15:4, 16:5, 17:6, 18:6},
-  "Builder's Hut":      {14:4, 15:5, 16:6, 17:7, 18:7},
-  "Monolith":           {15:2, 16:3, 17:4, 18:4},
-  "Spell Tower":        {15:3, 16:3, 17:4, 18:4},
-  "Multi-Archer Tower": {16:2, 17:3, 18:4},
-  "Ricochet Cannon":    {16:2, 17:3, 18:4},
-  "Firespitter":        {17:2, 18:3},
-  "Multi-Gear Tower":   {17:2, 18:3},
-
-  // Resources / Army / Key buildings
-  "Army Camp":          {7:6, 8:6, 9:7, 10:8, 11:9, 12:10, 13:11, 14:11, 15:12, 16:12, 17:13, 18:13},
-  "Barracks":           {7:8, 8:9, 9:10, 10:11, 11:12, 12:13, 13:14, 14:15, 15:16, 16:17, 17:18, 18:19},
-  "Clan Castle":        {7:3, 8:3, 9:4, 10:5, 11:6, 12:7, 13:8, 14:9, 15:10, 16:11, 17:12, 18:14},
-  "Laboratory":         {7:6, 8:7, 9:8, 10:9, 11:10, 12:11, 13:12, 14:13, 15:14, 16:15, 17:16, 18:16},
-  "Spell Factory":      {7:2, 8:3, 9:3, 10:4, 11:5, 12:6, 13:6, 14:7, 15:7, 16:8, 17:9, 18:9},
-  "Dark Barracks":      {7:2, 8:4, 9:6, 10:7, 11:8, 12:9, 13:10, 14:11, 15:12, 16:12, 17:12, 18:12},
-  "Dark Spell Factory": {8:2, 9:4, 10:5, 11:5, 12:6, 13:6, 14:7, 15:7, 16:7, 17:7, 18:7},
-  "Blacksmith":         {9:1, 10:2, 11:3, 12:4, 13:5, 14:6, 15:7, 16:8, 17:9, 18:9},
-  "Workshop":           {12:3, 13:5, 14:6, 15:7, 16:8, 17:8, 18:8},
-  "Pet House":          {14:4, 15:8, 16:10, 17:11, 18:12},
-  "Hero Hall":          {9:1, 10:2, 11:3, 12:4, 13:5, 14:6, 15:7, 16:8, 17:9, 18:12},
-
-  "Gold Mine":          {7:11, 8:12, 9:12, 10:13, 11:14, 12:15, 13:15, 14:16, 15:16, 16:17, 17:17, 18:17},
-  "Elixir Collector":   {7:11, 8:12, 9:12, 10:13, 11:14, 12:15, 13:15, 14:16, 15:16, 16:17, 17:17, 18:17},
-  "Gold Storage":       {7:11, 8:11, 9:11, 10:11, 11:12, 12:13, 13:14, 14:15, 15:16, 16:17, 17:18, 18:19},
-  "Elixir Storage":     {7:11, 8:11, 9:11, 10:11, 11:12, 12:13, 13:14, 14:15, 15:16, 16:17, 17:18, 18:19},
-  "Dark Elixir Drill":  {7:3, 8:3, 9:6, 10:7, 11:8, 12:9, 13:9, 14:10, 15:10, 16:11, 17:11, 18:11},
-  "Dark Elixir Storage":{7:2, 8:4, 9:6, 10:6, 11:6, 12:7, 13:8, 14:9, 15:10, 16:11, 17:12, 18:13},
-
-  "Town Hall":          {7:7, 8:8, 9:9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:18},
-
-  // Walls
-  "Wall":               {7:7, 8:8, 9:10, 10:11, 11:12, 12:13, 13:14, 14:15, 15:16, 16:17, 17:18, 18:19},
-
-  // Traps
-  "Bomb":               {7:4, 8:5, 9:6, 10:7, 11:8, 12:8, 13:9, 14:10, 15:11, 16:12, 17:13, 18:14},
-  "Spring Trap":        {7:2, 8:3, 9:4, 10:5, 11:6, 12:7, 13:8, 14:9, 15:10, 16:11, 17:12, 18:13},
-  "Air Bomb":           {7:3, 8:4, 9:4, 10:5, 11:6, 12:8, 13:9, 14:10, 15:11, 16:12, 17:13, 18:13},
-  "Giant Bomb":         {7:3, 8:4, 9:5, 10:5, 11:7, 12:8, 13:9, 14:10, 15:11, 16:11, 17:11, 18:11},
-  "Seeking Air Mine":   {7:1, 8:1, 9:2, 10:3, 11:3, 12:3, 13:4, 14:4, 15:5, 16:6, 17:7, 18:8},
-  "Skeleton Trap":      {8:2, 9:3, 10:4, 11:4, 12:4, 13:4, 14:4, 15:4, 16:4, 17:4, 18:5},
-  "Tornado Trap":       {10:2, 11:3, 12:3, 13:3, 14:3, 15:3, 16:3, 17:3, 18:3},
-  "Giga Bomb":          {15:3, 16:4, 17:4, 18:4},
-};
-
-let MAX_OVERRIDES = {};
-const $ = (id)=>document.getElementById(id);
-
-function setStatus(type, text){
-  const el = $("status");
-  const dot = el.querySelector(".dot");
-  const span = el.querySelector("span:last-child");
-  dot.classList.remove("ok","warn","bad");
-  dot.classList.add(type);
-  span.textContent = text;
-}
-
-function safeJsonParse(str){
-  try{ return { ok:true, data: JSON.parse(str) }; }
-  catch(e){ return { ok:false, err: e?.message || String(e) }; }
-}
-
-function collectEntries(arr){
-  const map = new Map();
-  if(!Array.isArray(arr)) return map;
-  for(const it of arr){
-    if(!it || typeof it !== "object") continue;
-    const id = Number(it.data);
-    const lvl = Number(it.lvl ?? 0);
-    const cnt = Number(it.cnt ?? 1); 
-    if(!Number.isFinite(id) || !Number.isFinite(lvl) || !Number.isFinite(cnt)) continue;
-
-    if(!map.has(id)) map.set(id, new Map());
-    const lm = map.get(id);
-    lm.set(lvl, (lm.get(lvl) || 0) + cnt);
-  }
-  return map;
-}
-
-function mergeLvlMaps(dst, src){
-  for(const [id, lm] of src.entries()){
-    if(!dst.has(id)) dst.set(id, new Map());
-    const dLm = dst.get(id);
-    for(const [lvl, cnt] of lm.entries()){
-      dLm.set(lvl, (dLm.get(lvl) || 0) + cnt);
-    }
-  }
-}
-
-function detectTownHallLevel(v){
-  const scan = (arr)=>{
-    if(!Array.isArray(arr)) return null;
-    for(const it of arr){
-      if(!it || typeof it !== "object") continue;
-      if(Number(it.data) === 1000001 && Number.isFinite(Number(it.lvl))){
-        return Number(it.lvl);
-      }
-    }
-    return null;
-  };
-  return scan(v.buildings) ?? scan(v.buildings2) ?? null;
-}
-
-function nameOf(id){
-  return ID_NAME[id] || `Unknown(${id})`;
-}
-
-function maxLevelFor(id, th){
-  if(MAX_OVERRIDES && Object.prototype.hasOwnProperty.call(MAX_OVERRIDES, String(id))){
-    const v = Number(MAX_OVERRIDES[String(id)]);
-    return Number.isFinite(v) ? v : null;
-  }
-  const name = nameOf(id);
-  const by = MAX_BY_NAME[name];
-  if(!by) return null;
-  return by[th] ?? null;
-}
-
-function formatLvlDist(lm){
-  const items = [...lm.entries()].sort((a,b)=>a[0]-b[0]);
-  return items.map(([lvl,cnt])=> cnt === 1 ? `L${lvl}` : `L${lvl}×${cnt}`).join(", ");
-}
-
-function sumCount(lm){
-  let s=0;
-  for(const cnt of lm.values()) s += cnt;
-  return s;
-}
-
-// ⭐ 【核心修复】拦截负数，防止超过目标 TH 等级的建筑抵消剩余数量
-function calcRemaining(lm, maxLvl){
-  let r=0;
-  for(const [lvl, cnt] of lm.entries()){
-    if (maxLvl > lvl) {
-        r += (maxLvl - lvl) * cnt;
-    }
-  }
-  return r;
-}
-
-function compute(){
-  const raw = $("jsonInput").value.trim();
-  const parsed = safeJsonParse(raw);
-  if(!parsed.ok){
-    setStatus("bad", "JSON 解析失败");
-    $("tbody").innerHTML = "";
-    $("curTH").textContent = "-";
-    $("kCount").textContent = "-";
-    $("kMaxed").textContent = "-";
-    $("kRemain").textContent = "-";
-    $("kUnknown").textContent = "0";
-    $("tagInfo").style.display = "none";
-    return;
-  }
-  const v = parsed.data;
-
-  const th = detectTownHallLevel(v);
-  $("curTH").textContent = th ?? "-";
-  
-  // ⭐ 【UX 修复】第一次贴入新 JSON 时，自动将目标 TH 选为当前 TH
-  if (th && $("jsonInput").dataset.lastTh !== String(th)) {
-    const tgt = $("targetTH");
-    // 确保下拉框里有这个选项
-    if ([...tgt.options].some(o => o.value == th)) {
-        tgt.value = th.toString();
-    }
-    $("jsonInput").dataset.lastTh = String(th);
-  }
-
-  if(v.tag){
-    $("tagInfo").style.display = "";
-    $("tagInfo").textContent = `Tag: ${v.tag}`;
-  }else{
-    $("tagInfo").style.display = "none";
-  }
-
-  const targetTH = Number($("targetTH").value);
-  const onlyNotMax = $("onlyNotMax").value === "1";
-  const sortBy = $("sortBy").value;
-
-  const all = new Map();
-  mergeLvlMaps(all, collectEntries(v.buildings));
-  mergeLvlMaps(all, collectEntries(v.traps));
-
-  const rows = [];
-  let unknownMax = 0;
-  let totalObjs = 0;
-  let maxedObjs = 0;
-  let totalRemain = 0;
-
-  for(const [id, lm] of all.entries()){
-    const name = nameOf(id);
-    const cntTotal = sumCount(lm);
-    totalObjs += cntTotal;
-
-    const maxLvl = maxLevelFor(id, targetTH);
-    if(maxLvl == null){
-      unknownMax++;
-      rows.push({
-        name, id, cntTotal,
-        dist: formatLvlDist(lm),
-        maxLvl: "UnknownMax",
-        remain: null,
-        remainNum: -1
-      });
-      continue;
-    }
-
-    const remain = calcRemaining(lm, maxLvl);
-    totalRemain += remain;
-
-    // 判断是否已满：如果最高级减去当前所有建筑的级数<=0，说明全满了
-    let isMaxed = true;
-    for (const lvl of lm.keys()) {
-        if (lvl < maxLvl) isMaxed = false;
-    }
-    if(isMaxed) maxedObjs += cntTotal;
-
-    if(onlyNotMax && isMaxed) continue;
-
-    rows.push({
-      name, id, cntTotal,
-      dist: formatLvlDist(lm),
-      maxLvl,
-      remain,
-      remainNum: remain
-    });
-  }
-
-  rows.sort((a,b)=>{
-    if(sortBy === "name_asc") return a.name.localeCompare(b.name);
-    if(sortBy === "remain_asc"){
-      const ar = a.remainNum; const br = b.remainNum;
-      if(ar === -1 && br !== -1) return 1;
-      if(br === -1 && ar !== -1) return -1;
-      return (ar - br);
-    }
-    const ar = a.remainNum; const br = b.remainNum;
-    if(ar === -1 && br !== -1) return 1;
-    if(br === -1 && ar !== -1) return -1;
-    return (br - ar);
-  });
-
-  $("kCount").textContent = String(totalObjs);
-  $("kMaxed").textContent = String(maxedObjs);
-  $("kRemain").textContent = String(totalRemain);
-  $("kUnknown").textContent = String(unknownMax);
-
-  setStatus("ok", "计算完成");
-
-  const tbody = $("tbody");
-  tbody.innerHTML = rows.map(r=>{
-    const remainText = (r.remain == null) ? `<span class="mono" style="color:var(--warn)">Unknown</span>`
-      : (r.remain === 0 ? `<span class="mono" style="color:var(--ok)">0</span>` : `<span class="mono" style="color:var(--warn)">${r.remain}</span>`);
-    const maxText = (r.maxLvl === "UnknownMax") ? `<span class="mono" style="color:var(--warn)">Unknown</span>` : `<span class="mono">${r.maxLvl}</span>`;
-    return `
-      <tr>
-        <td>${escapeHtml(r.name)}</td>
-        <td class="mono">${r.id}</td>
-        <td class="mono">${r.cntTotal}</td>
-        <td class="mono">${escapeHtml(r.dist)}</td>
-        <td>${maxText}</td>
-        <td>${remainText}</td>
-      </tr>
-    `;
-  }).join("");
-}
-
-function escapeHtml(s){
-  return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#39;");
-}
-
-function applyOverride(){
-  const raw = $("overrideInput").value.trim();
-  if(!raw){
-    MAX_OVERRIDES = {};
-    setStatus("warn", "已清空覆盖");
-    compute();
-    return;
-  }
-  const p = safeJsonParse(raw);
-  if(!p.ok || typeof p.data !== "object" || Array.isArray(p.data) || p.data == null){
-    setStatus("bad", "覆盖 JSON 格式不对");
-    return;
-  }
-  MAX_OVERRIDES = p.data;
-  setStatus("ok", "已应用覆盖");
-  compute();
-}
-
-function putDemo(){
-  const demo = {
-    tag:"#DEMO123",
-    buildings:[
-      {data:1000001,lvl:18,cnt:1},
-      {data:1000010,lvl:18,cnt:200},
-      {data:1000010,lvl:19,cnt:25},
-      {data:1000009,lvl:20,cnt:8},
-      {data:1000012,lvl:15,cnt:4},
-      {data:1000004,lvl:17,cnt:7},
-    ],
-    traps:[
-      {data:12000000,lvl:12,cnt:8},
-      {data:12000006,lvl:6,cnt:8},
-    ]
-  };
-  $("jsonInput").value = JSON.stringify(demo, null, 2);
-  // 重置 dataset 以便触发自动切换 TH
-  $("jsonInput").dataset.lastTh = "";
-  compute();
-}
-
-$("btnCalc").addEventListener("click", compute);
-$("btnApplyOverride").addEventListener("click", applyOverride);
-$("btnDemo").addEventListener("click", putDemo);
-$("btnClear").addEventListener("click", ()=>{
-  $("jsonInput").value = "";
-  $("overrideInput").value = "";
-  $("jsonInput").dataset.lastTh = "";
-  MAX_OVERRIDES = {};
-  setStatus("warn","等待输入");
-  $("tbody").innerHTML = "";
-  $("curTH").textContent = "-";
-  $("kCount").textContent = "-";
-  $("kMaxed").textContent = "-";
-  $("kRemain").textContent = "-";
-  $("kUnknown").textContent = "0";
-  $("tagInfo").style.display = "none";
-});
-
-["targetTH","sortBy","onlyNotMax"].forEach(id=>{
-  $(id).addEventListener("change", ()=>{ if($("jsonInput").value.trim()) compute(); });
-});
-
-setStatus("warn","等待输入");
-</script>
+    <script>
+        // 初始化 Chart.js 环形图
+        const ctx = document.getElementById('overallChart').getContext('2d');
+        // 假数据：82% 完成
+        const overallPercentage = 82; 
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['已完成', '未完成'],
+                datasets: [{
+                    data: [overallPercentage, 100 - overallPercentage],
+                    backgroundColor: [
+                        '#3b82f6', // 完成部分的颜色 (Tailwind blue-500)
+                        '#1e293b'  // 未完成部分的颜色 (Tailwind slate-800)
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 10, // 圆角效果
+                    cutout: '80%'     // 中间镂空的大小
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }, // 隐藏图例
+                    tooltip: { enabled: false } // 隐藏提示框
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 2000, // 动效时长
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    </script>
 </body>
 </html>
