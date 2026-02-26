@@ -71,7 +71,7 @@
                 </h1>
                 <p class="text-slate-400 mt-2">
                     玩家 Tag: <span class="font-mono text-white bg-slate-800 px-2 py-1 rounded" id="playerTag">#GCLU0Q80R</span>
-                    | 当前目标: <span class="text-coco-accent font-bold" id="targetTH">TH16 满防</span>
+                    | 当前目标: <span class="text-coco-accent font-bold" id="targetTH">TH18 满防</span>
                 </p>
             </div>
         </header>
@@ -183,145 +183,175 @@
 
     </div>
 
-    <script>
-        // 1. 准备模拟数据 (Sample Data)
-        // 这是未来的解析器需要输出的标准数据格式
-        const sampleData = {
-            playerTag: "#GCLU0Q80R",
-            targetTH: 16,
-            overallProgress: 82, // 综合加权进度
-            summary: {
-                shortfall: { title: "防空火箭 (Air Def)", desc: "平均落后 TH16 标准 2.5 级" },
-                resource: { title: "完美基建 (Maxed)", desc: "所有采集器与储罐均已满级" },
-                time: { title: "≈ 2 个月", desc: "基于 6 工人满负荷估算" }
-            },
-            categories: {
-                core: [
-                    { 
-                        name: "天鹰火炮 (Eagle)", percent: 90, status: "未满", color: "coco-purple",
-                        tags: [{ text: "Lv6 × 1", type: "normal" }] // TH16 满级是 Lv7
-                    },
-                    { 
-                        name: "投石机 (Scattershot)", percent: 85, status: "未满", color: "coco-purple",
-                        tags: [{ text: "Lv4 × 2", type: "normal" }] // TH16 满级是 Lv5
-                    },
-                    { 
-                        name: "地狱塔 (Inferno)", percent: 100, status: "已满", color: "slate-500", isMaxed: true,
-                        tags: [{ text: "Lv9(满) × 3", type: "maxed" }]
-                    }
-                ],
-                standard: [
-                    { 
-                        name: "防空火箭 (Air Def)", percent: 70, status: "严重滞后", color: "red-500",
-                        tags: [
-                            { text: "Lv12 × 1", type: "normal" },
-                            { text: "Lv10 × 3", type: "critical" } // 用红色高亮严重落后的
-                        ]
-                    },
-                    { 
-                        name: "箭塔 (Archer Tower)", percent: 88, status: "未满", color: "coco-accent",
-                        tags: [
-                            { text: "Lv21(满) × 4", type: "maxed" }, // 满级高亮
-                            { text: "Lv20 × 2", type: "normal" },
-                            { text: "Lv18 × 2", type: "lagging" }
-                        ]
-                    },
-                    { 
-                        name: "电塔 (Tesla)", percent: 100, status: "已满", color: "slate-500", isMaxed: true,
-                        tags: [{ text: "Lv14(满) × 5", type: "maxed" }]
-                    }
-                ],
-                eco: [
-                    { 
-                        name: "兵营 (Army Camp)", percent: 100, status: "已满", color: "coco-green", isMaxed: true,
-                        tags: [{ text: "Lv12(满) × 4", type: "maxed" }]
-                    },
-                    { 
-                        name: "金矿/水泵 (Collectors)", percent: 100, status: "已满", color: "coco-green", isMaxed: true,
-                        tags: [{ text: "Lv15(满) × 14", type: "maxed" }]
-                    },
-                    { 
-                        name: "储金/水罐 (Storages)", percent: 100, status: "已满", color: "coco-green", isMaxed: true,
-                        tags: [{ text: "Lv17(满) × 8", type: "maxed" }]
-                    }
-                ],
-                traps: [
-                    { 
-                        name: "巨型炸弹 (Giant Bomb)", percent: 60, status: "滞后", color: "coco-orange",
-                        tags: [
-                            { text: "Lv9 × 2", type: "lagging" },
-                            { text: "Lv8 × 4", type: "lagging" }
-                        ]
-                    },
-                    { 
-                        name: "搜空地雷 (SAM)", percent: 50, status: "严重滞后", color: "red-500",
-                        tags: [{ text: "Lv6 × 8", type: "critical" }]
-                    },
-                    { 
-                        name: "城墙总体 (Walls)", percent: 45, status: "路漫漫", color: "coco-orange",
-                        tags: [
-                            { text: "Lv17(满) × 20", type: "maxed" },
-                            { text: "Lv16 × 150", type: "normal" },
-                            { text: "Lv15 × 154", type: "lagging" }
-                        ]
-                    }
-                ]
-            }
+   <script>
+        // 1. 静态数据库 (全面升级为 TH18 满级标准)
+        // 数据参考自 TH18 更新及 2026 年 2 月最新平衡性补丁
+        const COC_DB = {
+            // 🛡️ 核心防御 (Core Defenses)
+            1000031: { name: "天鹰火炮", cat: "core", weight: 5, maxLvl: 7 },
+            1000067: { name: "投石机", cat: "core", weight: 5, maxLvl: 6 },
+            1000027: { name: "地狱塔", cat: "core", weight: 4, maxLvl: 12 },
+            1000021: { name: "X连弩", cat: "core", weight: 4, maxLvl: 12 },
+            1000077: { name: "巨石碑 (Monolith)", cat: "core", weight: 5, maxLvl: 4 },
+            1000072: { name: "法术塔", cat: "core", weight: 4, maxLvl: 4 }, // 2026年2月新等级
+            1000097: { name: "融合防御/守护者", cat: "core", weight: 5, maxLvl: 4 }, // TH18 守护者/特殊合成通用位
+            
+            // 🏹 常规防御 (Standard Defenses)
+            1000012: { name: "防空火箭", cat: "standard", weight: 3, maxLvl: 16 }, // TH18 新等级
+            1000009: { name: "箭塔", cat: "standard", weight: 2, maxLvl: 21 },
+            1000008: { name: "加农炮", cat: "standard", weight: 2, maxLvl: 21 },
+            1000011: { name: "法师塔", cat: "standard", weight: 3, maxLvl: 17 }, // (可融合成 Super Wizard Tower)
+            1000013: { name: "迫击炮", cat: "standard", weight: 2, maxLvl: 18 },
+            1000019: { name: "隐藏电塔", cat: "standard", weight: 2, maxLvl: 17 },
+            1000028: { name: "吹风机", cat: "standard", weight: 2, maxLvl: 7 },
+            1000032: { name: "炸弹塔", cat: "standard", weight: 3, maxLvl: 12 }, // TH18 新等级
+            1000084: { name: "多管箭塔", cat: "standard", weight: 4, maxLvl: 4 }, // TH18 新等级
+            1000085: { name: "跳弹加农炮", cat: "standard", weight: 4, maxLvl: 4 }, // TH18 新等级
+            1000089: { name: "喷火塔 (Firespitter)", cat: "standard", weight: 4, maxLvl: 3 }, // 2026年2月新等级
+            1000079: { name: "多管齿轮塔 (Multi-Gear)", cat: "standard", weight: 4, maxLvl: 3 }, // TH18 新等级
+
+            // 💰 资源与科技 (Economy & Army)
+            1000000: { name: "兵营", cat: "eco", weight: 3, maxLvl: 13 },
+            1000007: { name: "实验室", cat: "eco", weight: 3, maxLvl: 16 }, // TH18 新等级
+            1000068: { name: "战宠小屋", cat: "eco", weight: 3, maxLvl: 12 },
+            1000070: { name: "铁匠铺", cat: "eco", weight: 3, maxLvl: 9 },
+            1000004: { name: "金矿", cat: "eco", weight: 1, maxLvl: 17 },
+            1000002: { name: "圣水收集器", cat: "eco", weight: 1, maxLvl: 17 },
+            1000005: { name: "储金罐", cat: "eco", weight: 2, maxLvl: 19 }, // TH18 新等级
+            1000003: { name: "圣水瓶", cat: "eco", weight: 2, maxLvl: 19 }, // TH18 新等级
+            1000024: { name: "暗黑重油罐", cat: "eco", weight: 2, maxLvl: 13 }, // TH18 新等级
+            1000014: { name: "部落城堡", cat: "eco", weight: 3, maxLvl: 14 }, // TH18 新等级
+            1000006: { name: "训练营", cat: "eco", weight: 3, maxLvl: 19 }, // TH18 新等级
+            1000020: { name: "法术工厂", cat: "eco", weight: 3, maxLvl: 9 }, // TH18 新等级，解锁 Totem Spell
+            1000071: { name: "英雄大厅", cat: "eco", weight: 3, maxLvl: 12 }, // TH18 新等级
+
+            // 💣 陷阱与其它 (Traps)
+            1000010: { name: "城墙", cat: "traps", weight: 0.1, maxLvl: 19 }, // TH18 新等级
+            12000000: { name: "隐形炸弹", cat: "traps", weight: 1, maxLvl: 14 },
+            12000002: { name: "巨型炸弹", cat: "traps", weight: 1.5, maxLvl: 12 },
+            12000005: { name: "空中炸弹", cat: "traps", weight: 1.5, maxLvl: 13 },
+            12000006: { name: "搜空地雷", cat: "traps", weight: 1.5, maxLvl: 8 }, // 2026年2月新等级
+            12000016: { name: "飓风陷阱", cat: "traps", weight: 2, maxLvl: 3 },
+            12000020: { name: "千兆炸弹 (Giga Bomb)", cat: "traps", weight: 1.5, maxLvl: 4 } // 2026年2月新等级
         };
 
-        // 2. 渲染函数：将数据填充到界面
-        function renderDashboard(data) {
-            // 填充头部信息
-            document.getElementById('playerTag').textContent = data.playerTag;
-            document.getElementById('targetTH').textContent = `TH${data.targetTH} 满防`;
+        let myChart = null; 
 
-            // 渲染环形图
+        // 2. 核心解析函数 (Raw JSON -> UI Data)
+        function analyzeData() {
+            const rawText = document.getElementById('jsonInput').value.trim();
+            if(!rawText) return alert("请先粘贴 JSON 数据！");
+            
+            let data;
+            try { data = JSON.parse(rawText); } 
+            catch (e) { return alert("JSON 格式错误，请重新复制。"); }
+
+            document.getElementById('playerTag').textContent = "Tag: " + (data.tag || "未知");
+            
+            const inventory = new Map();
+            const allItems = [...(data.buildings || []), ...(data.traps || [])];
+            
+            allItems.forEach(item => {
+                const id = item.data;
+                const lvl = item.lvl || 0;
+                const count = item.cnt || 1;
+                
+                if(!COC_DB[id]) return;
+
+                if(!inventory.has(id)) inventory.set(id, []);
+                for(let i=0; i<count; i++) inventory.get(id).push(lvl);
+            });
+
+            const uiData = { core: [], standard: [], eco: [], traps: [] };
+            let totalScore = 0;
+            let totalWeight = 0;
+            let catScores = { core: {s:0, w:0}, standard: {s:0, w:0}, eco: {s:0, w:0}, traps: {s:0, w:0} };
+
+            inventory.forEach((levelsArr, id) => {
+                const dbInfo = COC_DB[id];
+                const maxLvl = dbInfo.maxLvl; // 变更为读取 maxLvl
+                
+                const levelCounts = {};
+                levelsArr.forEach(l => { levelCounts[l] = (levelCounts[l] || 0) + 1; });
+                
+                let currentTotalLvl = 0;
+                const maxTotalLvl = levelsArr.length * maxLvl;
+                const tags = [];
+                
+                Object.keys(levelCounts).map(Number).sort((a,b)=>b-a).forEach(lvl => {
+                    currentTotalLvl += (Math.min(lvl, maxLvl) * levelCounts[lvl]); 
+                    
+                    let type = "normal";
+                    if(lvl >= maxLvl) type = "maxed";
+                    else if(maxLvl - lvl === 1) type = "normal";
+                    else if(maxLvl - lvl === 2) type = "lagging";
+                    else type = "critical";
+
+                    tags.push({
+                        text: `Lv${lvl}${lvl >= maxLvl ? '(满)' : ''} × ${levelCounts[lvl]}`,
+                        type: type
+                    });
+                });
+
+                const percent = maxTotalLvl === 0 ? 100 : Math.floor((currentTotalLvl / maxTotalLvl) * 100);
+                const isMaxed = percent === 100;
+                
+                const itemWeight = dbInfo.weight * levelsArr.length;
+                totalScore += (percent * itemWeight);
+                totalWeight += itemWeight;
+                
+                catScores[dbInfo.cat].s += (percent * itemWeight);
+                catScores[dbInfo.cat].w += itemWeight;
+
+                let color = dbInfo.cat === 'core' ? 'coco-purple' : dbInfo.cat === 'eco' ? 'coco-green' : dbInfo.cat === 'traps' ? 'coco-orange' : 'coco-accent';
+                if(!isMaxed && percent < 75 && dbInfo.cat !== 'eco') color = 'red-500'; 
+
+                uiData[dbInfo.cat].push({
+                    name: dbInfo.name,
+                    percent: percent,
+                    status: isMaxed ? "已满" : percent < 75 ? "滞后" : "未满",
+                    color: color,
+                    isMaxed: isMaxed,
+                    tags: tags
+                });
+            });
+
+            const finalPercentage = totalWeight === 0 ? 0 : Math.floor(totalScore / totalWeight);
+            
+            const safeCalc = (cat) => catScores[cat].w === 0 ? 0 : Math.floor(catScores[cat].s / catScores[cat].w);
+            document.getElementById('statDef').textContent = Math.floor((safeCalc('core') + safeCalc('standard'))/2) + "%";
+            document.getElementById('statEco').textContent = safeCalc('eco') + "%";
+            document.getElementById('statTraps').textContent = safeCalc('traps') + "%";
+
+            renderUI(finalPercentage, uiData);
+        }
+
+        // 3. UI 渲染逻辑
+        function renderUI(overallPercent, catData) {
+            if(myChart) myChart.destroy();
             const ctx = document.getElementById('overallChart').getContext('2d');
-            new Chart(ctx, {
+            myChart = new Chart(ctx, {
                 type: 'doughnut',
-                data: {
-                    datasets: [{
-                        data: [data.overallProgress, 100 - data.overallProgress],
-                        backgroundColor: ['#3b82f6', '#1e293b'],
-                        borderWidth: 0, borderRadius: 10, cutout: '80%'
-                    }]
-                },
+                data: { datasets: [{ data: [overallPercent, 100 - overallPercent], backgroundColor: ['#3b82f6', '#1e293b'], borderWidth: 0, borderRadius: 10, cutout: '80%' }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: false, tooltip: false }, animation: { animateRotate: true, duration: 1500 } }
             });
-            // 数字动画效果
-            let currentNum = 0;
-            const targetNum = data.overallProgress;
-            const numEl = document.getElementById('overallText');
-            const interval = setInterval(() => {
-                if (currentNum >= targetNum) { clearInterval(interval); currentNum = targetNum; }
-                numEl.textContent = currentNum + '%';
-                currentNum++;
-            }, 15);
 
-            // 填充顶部三个状态卡片
-            document.getElementById('keyShortfallTitle').textContent = data.summary.shortfall.title;
-            document.getElementById('keyShortfallDesc').textContent = data.summary.shortfall.desc;
-            document.getElementById('resourceStatusTitle').textContent = data.summary.resource.title;
-            document.getElementById('resourceStatusDesc').textContent = data.summary.resource.desc;
-            document.getElementById('timeEstimateTitle').textContent = data.summary.time.title;
-            document.getElementById('timeEstimateDesc').textContent = data.summary.time.desc;
+            document.getElementById('overallText').textContent = overallPercent + '%';
 
-            // 辅助函数：生成分类列表项的 HTML
-            function renderCategoryList(containerId, items) {
+            function renderList(containerId, items) {
                 const container = document.getElementById(containerId);
+                if(items.length === 0) { container.innerHTML = '<div class="text-slate-500 text-sm">暂无数据</div>'; return; }
+                
+                items.sort((a,b) => a.percent - b.percent);
+
                 container.innerHTML = items.map(item => {
-                    // 生成标签 HTML
                     const tagsHtml = item.tags.map(tag => {
-                        const tagClass = tag.type === 'maxed' ? 'tag-maxed' :
-                                         tag.type === 'critical' ? 'tag-critical' :
-                                         tag.type === 'lagging' ? 'tag-lagging' : 'tag-normal';
+                        const tagClass = tag.type === 'maxed' ? 'tag-maxed' : tag.type === 'critical' ? 'tag-critical' : tag.type === 'lagging' ? 'tag-lagging' : 'tag-normal';
                         return `<span class="level-tag ${tagClass}">${tag.text}</span>`;
                     }).join('');
 
-                    // 进度条颜色处理 (如果是满级，进度条底色变暗淡)
                     const bgColorClass = item.isMaxed ? 'bg-slate-600/50' : `bg-${item.color}`;
-                    const textColorClass = item.isMaxed ? 'text-slate-500' : 
-                                           item.color === 'red-500' ? 'text-red-400' : `text-${item.color}`;
+                    const textColorClass = item.isMaxed ? 'text-slate-500' : item.color === 'red-500' ? 'text-red-400' : `text-${item.color}`;
 
                     return `
                         <div>
@@ -332,25 +362,19 @@
                             <div class="progress-track mb-2">
                                 <div class="progress-fill ${bgColorClass}" style="width: ${item.percent}%"></div>
                             </div>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${tagsHtml}
-                            </div>
+                            <div class="flex flex-wrap gap-1.5">${tagsHtml}</div>
                         </div>
                     `;
                 }).join('');
             }
 
-            // 渲染四大分类列表
-            renderCategoryList('list-core', data.categories.core);
-            renderCategoryList('list-standard', data.categories.standard);
-            renderCategoryList('list-eco', data.categories.eco);
-            renderCategoryList('list-traps', data.categories.traps);
+            renderList('list-core', catData.core);
+            renderList('list-standard', catData.standard);
+            renderList('list-eco', catData.eco);
+            renderList('list-traps', catData.traps);
         }
 
-        // 3. 执行渲染
-        // 在真实应用中，这里会是先调用解析函数生成数据，再调用 render
-        renderDashboard(sampleData);
-
+        document.getElementById('btnAnalyze').addEventListener('click', analyzeData);
     </script>
 </body>
 </html>
