@@ -25,7 +25,7 @@
     .grid{ display:grid; grid-template-columns: 1.2fr .8fr; gap:14px; }
     @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
     .card{ background:rgba(17,26,46,.82); border:1px solid rgba(34,49,83,.8); border-radius:14px; padding:14px; box-shadow: 0 18px 40px rgba(0,0,0,.25); }
-    textarea{ width:100%; min-height:220px; resize:vertical; background:rgba(5,10,20,.6); border:1px solid var(--line); border-radius:10px; padding:10px; color:var(--text); font-family:var(--mono); font-size:12px; line-height:1.4; }
+    textarea{ width:100%; min-height:220px; resize:vertical; background:rgba(5,10,20,.6); border:1px solid var(--line); border-radius:10px; padding:10px; color:var(--text); font-family:var(--mono); font-size:12px; line-height:1.4; box-sizing: border-box;}
     .row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
     select, button, input{
       background:rgba(5,10,20,.6);
@@ -48,7 +48,7 @@
     .k .v.bad{ color:var(--bad); }
     table{ width:100%; border-collapse:collapse; margin-top:10px; }
     th, td{ text-align:left; padding:10px; border-bottom:1px solid rgba(34,49,83,.7); font-size:13px; }
-    th{ color:var(--muted); font-weight:600; }
+    th{ color:var(--muted); font-weight:600; position: sticky; top: 0; background: rgba(17,26,46,0.95); z-index: 1;}
     tr:hover td{ background:rgba(255,255,255,.03); }
     .mono{ font-family:var(--mono); }
     .small{ color:var(--muted); font-size:12px; }
@@ -67,7 +67,7 @@
     <h1>COC 满级差多少 - JSON 计算器（Home Village）</h1>
     <div class="sub">
       贴上 Clash of Clans 游戏内 <span class="mono">Settings → More Settings → Data Export</span> 的 JSON。<br/>
-      工具会自动识别你当前 TH，并按目标 TH（默认 TH18）计算：每个建筑距离“满级”还差多少（以“剩余等级总和”表示）。
+      工具会自动识别你当前 TH，并按目标 TH 计算：每个建筑距离“满级”还差多少（以“剩余等级总和”表示）。
     </div>
 
     <div class="grid">
@@ -154,7 +154,7 @@
               <span class="pill">结果（未满清单）</span>
               <span class="pill">UnknownMax：<b id="kUnknown">0</b></span>
             </div>
-            <div style="max-height:520px; overflow:auto; border-radius:12px; border:1px solid rgba(34,49,83,.6);">
+            <div style="max-height:520px; overflow:auto; border-radius:12px; border:1px solid rgba(34,49,83,.6); margin-top: 10px;">
               <table>
                 <thead>
                   <tr>
@@ -175,7 +175,7 @@
             <div class="row">
               <span class="pill">可自定义 max 表（可选）</span>
             </div>
-            <div class="small">
+            <div class="small" style="margin: 10px 0;">
               你可以在这里贴一个 JSON，用来覆盖/补充 maxLevel：<br/>
               格式：<span class="mono">{ "1000010": 19, "1000004": 17 }</span>
             </div>
@@ -186,12 +186,7 @@
 }' style="min-height:210px;"></textarea>
             <div class="row">
               <button id="btnApplyOverride">应用覆盖</button>
-              <span class="small">覆盖只在本页生效（刷新会消失）。你也可以把它写进代码里的 MAX_OVERRIDES。</span>
-            </div>
-
-            <div class="foot">
-              max 等级数据来源（Home Village）：Clash Ninja 的 TH max levels 表。 :contentReference[oaicite:2]{index=2} <br/>
-              dataId → 名称映射参考社区整理（与你 JSON 的 dataId 对得上）。 :contentReference[oaicite:3]{index=3}
+              <span class="small" style="flex:1;">覆盖只在本页生效。也可以直接写进代码 MAX_OVERRIDES。</span>
             </div>
           </div>
         </div>
@@ -200,10 +195,6 @@
   </div>
 
 <script>
-/**
- * 1) dataId -> name（只先覆盖你这份 JSON 会用到的大头：防御/资源/兵营/陷阱/墙/关键建筑）
- *    参考社区 mapping：:contentReference[oaicite:4]{index=4}
- */
 const ID_NAME = {
   // Defenses
   1000008: "Cannon",
@@ -225,7 +216,10 @@ const ID_NAME = {
   1000085: "Ricochet Cannon",
   1000079: "Multi-Gear Tower",
   1000089: "Firespitter",
-  1000097: "Crafted Defense",
+  1000097: "Crafted Defense", 
+  
+  // Custom additions for newer Town Halls to prevent Unknown
+  1000086: "B.O.B's Hut",
 
   // Walls
   1000010: "Wall",
@@ -261,13 +255,6 @@ const ID_NAME = {
   12000020: "Giga Bomb",
 };
 
-/**
- * 2) TH -> max level table（只做 Home Village buildings + traps + walls + key buildings）
- *    数据来自 Clash Ninja max levels 表：:contentReference[oaicite:5]{index=5}
- *
- * 结构：MAX_BY_NAME[name][th] = maxLevel
- * 这里只填 TH7-TH18（够你用了），少数建筑在某些 TH 不存在，就不填。
- */
 const MAX_BY_NAME = {
   // Defenses
   "Cannon":             {7:8, 8:10, 9:11, 10:13, 11:15, 12:17, 13:19, 14:20, 15:21, 16:21, 17:21, 18:21},
@@ -289,8 +276,6 @@ const MAX_BY_NAME = {
   "Ricochet Cannon":    {16:2, 17:3, 18:4},
   "Firespitter":        {17:2, 18:3},
   "Multi-Gear Tower":   {17:2, 18:3},
-  // "Inferno Artillery":  {17:5}, // 你 JSON 里未必有（融合建筑），先不强行算
-  // "Revenge Tower":      {18:2}, // 同上
 
   // Resources / Army / Key buildings
   "Army Camp":          {7:6, 8:6, 9:7, 10:8, 11:9, 12:10, 13:11, 14:11, 15:12, 16:12, 17:13, 18:13},
@@ -328,10 +313,7 @@ const MAX_BY_NAME = {
   "Giga Bomb":          {15:3, 16:4, 17:4, 18:4},
 };
 
-// 手动覆盖：你也可以直接改这里，永久写死在文件里
 let MAX_OVERRIDES = {};
-
-/** ---------- UI helpers ---------- */
 const $ = (id)=>document.getElementById(id);
 
 function setStatus(type, text){
@@ -348,16 +330,14 @@ function safeJsonParse(str){
   catch(e){ return { ok:false, err: e?.message || String(e) }; }
 }
 
-/** 从各种列表中抽取 (dataId,lvl,cnt) 的统计 */
 function collectEntries(arr){
-  // 返回 Map<dataId, Map<lvl, cnt>>
   const map = new Map();
   if(!Array.isArray(arr)) return map;
   for(const it of arr){
     if(!it || typeof it !== "object") continue;
     const id = Number(it.data);
     const lvl = Number(it.lvl ?? 0);
-    const cnt = Number(it.cnt ?? 1); // 没 cnt 就当 1
+    const cnt = Number(it.cnt ?? 1); 
     if(!Number.isFinite(id) || !Number.isFinite(lvl) || !Number.isFinite(cnt)) continue;
 
     if(!map.has(id)) map.set(id, new Map());
@@ -377,9 +357,7 @@ function mergeLvlMaps(dst, src){
   }
 }
 
-/** 从 village JSON 里找 Town Hall level（dataId=1000001） */
 function detectTownHallLevel(v){
-  // 优先在 buildings 里找聚合条目
   const scan = (arr)=>{
     if(!Array.isArray(arr)) return null;
     for(const it of arr){
@@ -393,19 +371,15 @@ function detectTownHallLevel(v){
   return scan(v.buildings) ?? scan(v.buildings2) ?? null;
 }
 
-/** 根据 dataId 推断 name */
 function nameOf(id){
   return ID_NAME[id] || `Unknown(${id})`;
 }
 
-/** 根据 name + th 得到 maxLevel */
 function maxLevelFor(id, th){
-  // 覆盖优先（dataId 维度）
   if(MAX_OVERRIDES && Object.prototype.hasOwnProperty.call(MAX_OVERRIDES, String(id))){
     const v = Number(MAX_OVERRIDES[String(id)]);
     return Number.isFinite(v) ? v : null;
   }
-
   const name = nameOf(id);
   const by = MAX_BY_NAME[name];
   if(!by) return null;
@@ -413,7 +387,6 @@ function maxLevelFor(id, th){
 }
 
 function formatLvlDist(lm){
-  // lm: Map<lvl,cnt>
   const items = [...lm.entries()].sort((a,b)=>a[0]-b[0]);
   return items.map(([lvl,cnt])=> cnt === 1 ? `L${lvl}` : `L${lvl}×${cnt}`).join(", ");
 }
@@ -424,16 +397,17 @@ function sumCount(lm){
   return s;
 }
 
+// ⭐ 【核心修复】拦截负数，防止超过目标 TH 等级的建筑抵消剩余数量
 function calcRemaining(lm, maxLvl){
-  // Σ(maxLvl - lvl) * cnt
   let r=0;
   for(const [lvl, cnt] of lm.entries()){
-    r += (maxLvl - lvl) * cnt;
+    if (maxLvl > lvl) {
+        r += (maxLvl - lvl) * cnt;
+    }
   }
   return r;
 }
 
-/** 主计算 */
 function compute(){
   const raw = $("jsonInput").value.trim();
   const parsed = safeJsonParse(raw);
@@ -452,6 +426,17 @@ function compute(){
 
   const th = detectTownHallLevel(v);
   $("curTH").textContent = th ?? "-";
+  
+  // ⭐ 【UX 修复】第一次贴入新 JSON 时，自动将目标 TH 选为当前 TH
+  if (th && $("jsonInput").dataset.lastTh !== String(th)) {
+    const tgt = $("targetTH");
+    // 确保下拉框里有这个选项
+    if ([...tgt.options].some(o => o.value == th)) {
+        tgt.value = th.toString();
+    }
+    $("jsonInput").dataset.lastTh = String(th);
+  }
+
   if(v.tag){
     $("tagInfo").style.display = "";
     $("tagInfo").textContent = `Tag: ${v.tag}`;
@@ -463,7 +448,6 @@ function compute(){
   const onlyNotMax = $("onlyNotMax").value === "1";
   const sortBy = $("sortBy").value;
 
-  // Home Village: buildings + traps（你最关心的“建筑物”）
   const all = new Map();
   mergeLvlMaps(all, collectEntries(v.buildings));
   mergeLvlMaps(all, collectEntries(v.traps));
@@ -482,7 +466,6 @@ function compute(){
     const maxLvl = maxLevelFor(id, targetTH);
     if(maxLvl == null){
       unknownMax++;
-      // Unknown 的也展示出来（方便你补）
       rows.push({
         name, id, cntTotal,
         dist: formatLvlDist(lm),
@@ -496,9 +479,14 @@ function compute(){
     const remain = calcRemaining(lm, maxLvl);
     totalRemain += remain;
 
-    if(remain === 0) maxedObjs += cntTotal;
+    // 判断是否已满：如果最高级减去当前所有建筑的级数<=0，说明全满了
+    let isMaxed = true;
+    for (const lvl of lm.keys()) {
+        if (lvl < maxLvl) isMaxed = false;
+    }
+    if(isMaxed) maxedObjs += cntTotal;
 
-    if(onlyNotMax && remain === 0) continue;
+    if(onlyNotMax && isMaxed) continue;
 
     rows.push({
       name, id, cntTotal,
@@ -509,7 +497,6 @@ function compute(){
     });
   }
 
-  // sorting
   rows.sort((a,b)=>{
     if(sortBy === "name_asc") return a.name.localeCompare(b.name);
     if(sortBy === "remain_asc"){
@@ -518,7 +505,6 @@ function compute(){
       if(br === -1 && ar !== -1) return -1;
       return (ar - br);
     }
-    // remain_desc
     const ar = a.remainNum; const br = b.remainNum;
     if(ar === -1 && br !== -1) return 1;
     if(br === -1 && ar !== -1) return -1;
@@ -532,7 +518,6 @@ function compute(){
 
   setStatus("ok", "计算完成");
 
-  // render
   const tbody = $("tbody");
   tbody.innerHTML = rows.map(r=>{
     const remainText = (r.remain == null) ? `<span class="mono" style="color:var(--warn)">Unknown</span>`
@@ -560,7 +545,6 @@ function escapeHtml(s){
     .replaceAll("'","&#39;");
 }
 
-/** override max levels by dataId */
 function applyOverride(){
   const raw = $("overrideInput").value.trim();
   if(!raw){
@@ -579,7 +563,6 @@ function applyOverride(){
   compute();
 }
 
-/** demo */
 function putDemo(){
   const demo = {
     tag:"#DEMO123",
@@ -597,6 +580,8 @@ function putDemo(){
     ]
   };
   $("jsonInput").value = JSON.stringify(demo, null, 2);
+  // 重置 dataset 以便触发自动切换 TH
+  $("jsonInput").dataset.lastTh = "";
   compute();
 }
 
@@ -606,6 +591,7 @@ $("btnDemo").addEventListener("click", putDemo);
 $("btnClear").addEventListener("click", ()=>{
   $("jsonInput").value = "";
   $("overrideInput").value = "";
+  $("jsonInput").dataset.lastTh = "";
   MAX_OVERRIDES = {};
   setStatus("warn","等待输入");
   $("tbody").innerHTML = "";
@@ -617,7 +603,6 @@ $("btnClear").addEventListener("click", ()=>{
   $("tagInfo").style.display = "none";
 });
 
-// auto-calc when settings changed
 ["targetTH","sortBy","onlyNotMax"].forEach(id=>{
   $(id).addEventListener("change", ()=>{ if($("jsonInput").value.trim()) compute(); });
 });
