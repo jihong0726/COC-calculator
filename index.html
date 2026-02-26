@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COC 全景指挥舱 V7.0 - 视觉实战版</title>
+    <title>COC 全景指挥舱 V7.1 - 视觉防弹版</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -29,10 +29,10 @@
             .tag-critical { @apply bg-red-900/40 text-red-400 border-red-700/50; }
             .glass { @apply bg-opacity-80 backdrop-blur-2xl border-slate-800/60 shadow-lg; }
             
-            /* 建筑图标占位符及样式 */
+            /* 图片和占位符的基础样式 */
             .item-icon { @apply w-10 h-10 rounded-lg object-contain bg-slate-800/50 p-1 border border-slate-700/50 shrink-0; }
+            .fallback-icon { @apply w-10 h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 border border-slate-600 flex items-center justify-center text-slate-300 text-sm font-black shrink-0 shadow-inner; }
             
-            /* 动态网格，适应更多分类 */
             .auto-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
         }
     </style>
@@ -47,7 +47,7 @@
                 </div>
                 <div>
                     <h1 class="text-2xl md:text-3xl font-black text-white tracking-tight">部落冲突 <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">全景指挥舱</span></h1>
-                    <p class="text-xs text-slate-400 tracking-wider mt-1">V7.0 视觉图鉴版 | 智能过滤冷板凳装备</p>
+                    <p class="text-xs text-slate-400 tracking-wider mt-1">V7.1 防弹视觉版 | 自动修正碎裂图标</p>
                 </div>
             </div>
             
@@ -82,7 +82,7 @@
                     <h3 class="text-xs font-bold text-slate-300 uppercase">Action Item (下一步推荐升级)</h3>
                 </div>
                 <div class="flex items-center gap-4">
-                    <img id="urgentIcon" src="https://placehold.co/100x100/1e293b/334155?text=..." class="w-16 h-16 rounded-xl border border-slate-700 bg-slate-800 object-contain p-1" alt="icon">
+                    <div id="urgentIconContainer" class="w-16 h-16 rounded-xl border border-slate-700 bg-slate-800 flex items-center justify-center text-slate-400">?</div>
                     <div>
                         <h2 class="text-2xl md:text-3xl font-black text-white" id="insightTitle">等待解析...</h2>
                         <p class="text-sm text-slate-400 mt-1" id="insightDesc">导入数据后，系统将锁定拖后腿最严重的防守核心。</p>
@@ -98,7 +98,7 @@
                 </div>
                 <div class="bg-coco-card rounded-2xl p-4 border-l-4 border-cyan-500 shadow-xl glass flex-1 flex flex-col justify-center">
                     <p class="text-[10px] font-bold text-slate-500 mb-1">装备智能过滤 (Smart Filter)</p>
-                    <div class="text-sm font-bold text-cyan-400" id="equipFilterStatus">已自动忽略 Lv1~Lv2 冷板凳装备</div>
+                    <div class="text-sm font-bold text-cyan-400" id="equipFilterStatus">等待导入...</div>
                 </div>
             </div>
         </div>
@@ -132,7 +132,21 @@
     </div>
 
     <script>
-        // 数据库升级：增加 icon 图像支持 (采用通用高质量维基图片链接)
+        // 核心黑科技：图片加载失败时，自动转化为优雅的 CSS 字母头像
+        function handleImgError(imgElement, itemName) {
+            // 取名称的第一个字作为图标
+            const firstChar = itemName.charAt(0);
+            const parent = imgElement.parentNode;
+            
+            // 创建一个替代的 div
+            const fallbackDiv = document.createElement('div');
+            fallbackDiv.className = 'fallback-icon';
+            fallbackDiv.innerText = firstChar;
+            
+            // 替换碎裂的图片
+            parent.replaceChild(fallbackDiv, imgElement);
+        }
+
         const COC_DB = {
             1000031: { name: "天鹰火炮", cat: "core", weight: 5, max: 7, icon: "https://static.wikia.nocookie.net/clashofclans/images/c/c5/Eagle_Artillery7.png" },
             1000067: { name: "投石机", cat: "core", weight: 5, max: 6, icon: "https://static.wikia.nocookie.net/clashofclans/images/c/cb/Scattershot4.png" },
@@ -151,11 +165,22 @@
             28000000: { name: "野蛮人之王", cat: "tech", weight: 5, max: 105, icon: "https://static.wikia.nocookie.net/clashofclans/images/8/87/Barbarian_King_info.png" },
             28000001: { name: "弓箭女皇", cat: "tech", weight: 5, max: 105, icon: "https://static.wikia.nocookie.net/clashofclans/images/e/ed/Archer_Queen_info.png" },
             28000002: { name: "大守护者", cat: "tech", weight: 5, max: 80, icon: "https://static.wikia.nocookie.net/clashofclans/images/a/a2/Grand_Warden_info.png" },
-            28000004: { name: "飞盾战神", cat: "tech", weight: 5, max: 55, icon: "https://static.wikia.nocookie.net/clashofclans/images/a/ae/Royal_Champion_info.png" }
+            28000004: { name: "飞盾战神", cat: "tech", weight: 5, max: 55, icon: "https://static.wikia.nocookie.net/clashofclans/images/a/ae/Royal_Champion_info.png" },
+
+            // 针对你截图里暴露出的常见 ID 进行中文化映射 (不再显示冰冷的数字)
+            9000001: { name: "弓箭手木偶", cat: "equip", weight: 2, max: 18 },
+            9000003: { name: "狂暴药瓶", cat: "equip", weight: 2, max: 18 },
+            9000007: { name: "地震靴", cat: "equip", weight: 2, max: 18 },
+            9000010: { name: "隐形药瓶", cat: "equip", weight: 2, max: 18 },
+            9000024: { name: "治疗书", cat: "equip", weight: 2, max: 18 },
+            9000043: { name: "永恒书", cat: "equip", weight: 2, max: 18 },
+            9000048: { name: "巨大手套", cat: "equip", weight: 2, max: 27 },
+            7300009: { name: "独角 (Unicorn)", cat: "tech", weight: 2, max: 10 },
+            7300011: { name: "挖挖 (Diggy)", cat: "tech", weight: 2, max: 10 },
+            7300016: { name: "灵狐 (Spirit Fox)", cat: "tech", weight: 2, max: 10 }
         };
 
-        // Fallback 图片
-        const DEFAULT_ICON = "https://placehold.co/100x100/1e293b/475569?text=COC";
+        const DEFAULT_ICON = "invalid_url_to_trigger_fallback.png"; // 故意触发 fallback 生成优雅的文字图标
 
         let myChart = null;
 
@@ -181,29 +206,26 @@
                 if (item.data === 1000010) {
                     const c = item.cnt || 1;
                     wallTotal += c;
-                    if ((item.lvl || 0) >= 19) wallMax += c; // TH18 假定 19级墙
-                    return; // 墙不进入主循环
+                    if ((item.lvl || 0) >= 19) wallMax += c; 
+                    return; 
                 }
 
                 const strId = String(item.data);
                 
-                // 【核心优化点】：装备分类与过滤
                 if (strId.startsWith("9000")) {
                     const lvl = item.lvl || 0;
-                    // 如果装备等级小于 3 级，直接认定为“不使用的冷板凳装备”，彻底忽略不计入进度！
                     if (lvl < 3) {
                         ignoredEquipCount++;
                         return; 
                     }
-                    if(!COC_DB[item.data]) COC_DB[item.data] = { name: "主力装备 " + strId.slice(-3), cat: "equip", weight: 2, max: 27, icon: DEFAULT_ICON };
+                    if(!COC_DB[item.data]) COC_DB[item.data] = { name: "史诗装备 " + strId.slice(-3), cat: "equip", weight: 2, max: 27, icon: DEFAULT_ICON };
                 }
 
-                // 动态注册未知项目
                 if(!COC_DB[item.data]) {
-                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "兵种/战车 " + strId.slice(-3), cat: "tech", weight: 1, max: 14, icon: DEFAULT_ICON };
-                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "法术 " + strId.slice(-3), cat: "tech", weight: 1, max: 12, icon: DEFAULT_ICON };
-                    else if (strId.startsWith("7300")) COC_DB[item.data] = { name: "战宠 " + strId.slice(-3), cat: "tech", weight: 2, max: 15, icon: DEFAULT_ICON };
-                    else if (strId.startsWith("1000")) COC_DB[item.data] = { name: "常规建筑", cat: "eco", weight: 1, max: 15, icon: DEFAULT_ICON }; // 兜底
+                    if (strId.startsWith("4000")) COC_DB[item.data] = { name: "高级兵种 " + strId.slice(-3), cat: "tech", weight: 1, max: 14, icon: DEFAULT_ICON };
+                    else if (strId.startsWith("2600")) COC_DB[item.data] = { name: "秘法药水 " + strId.slice(-3), cat: "tech", weight: 1, max: 12, icon: DEFAULT_ICON };
+                    else if (strId.startsWith("7300")) COC_DB[item.data] = { name: "战宠伴侣 " + strId.slice(-3), cat: "tech", weight: 2, max: 15, icon: DEFAULT_ICON };
+                    else if (strId.startsWith("1000")) COC_DB[item.data] = { name: "阵营基建", cat: "eco", weight: 1, max: 15, icon: DEFAULT_ICON }; 
                     else return; 
                 }
 
@@ -241,7 +263,6 @@
                 totalS += p * weight; totalW += weight;
                 cats[info.cat].s += p * weight; cats[info.cat].w += weight;
 
-                // 寻找最紧急升级目标 (只看核心或常规防御)
                 if (!isMaxed && (info.cat === 'core' || info.cat === 'standard')) {
                     if (!urgentTarget || p < urgentTarget.p) urgentTarget = { name: info.name, p: p, icon: info.icon || DEFAULT_ICON, max: info.max, minLvl: Math.min(...lvls) };
                 }
@@ -253,14 +274,16 @@
                 });
             });
 
-            // 渲染下一步行动
+            const container = document.getElementById('urgentIconContainer');
             if (urgentTarget) {
-                document.getElementById('urgentIcon').src = urgentTarget.icon;
+                // 如果有图，渲染图；图裂了，触发 onerror 变成文字占位符
+                container.innerHTML = `<img src="${urgentTarget.icon}" onerror="handleImgError(this, '${urgentTarget.name}')" class="w-full h-full object-contain p-1" alt="icon">`;
                 document.getElementById('insightTitle').innerHTML = `<span class="text-red-400">${urgentTarget.name}</span>`;
-                document.getElementById('insightDesc').innerHTML = `当前最低仅 <b>Lv${urgentTarget.minLvl}</b> (目标 Lv${urgentTarget.max})。综合进度 ${urgentTarget.p}%，严重破坏防御阵型下限，建议立刻升级。`;
+                document.getElementById('insightDesc').innerHTML = `当前最低仅 <b>Lv${urgentTarget.minLvl}</b> (满级 Lv${urgentTarget.max})，建议立刻安排工人升级。`;
             } else {
+                container.innerHTML = `<div class="w-full h-full flex items-center justify-center text-2xl">🎉</div>`;
                 document.getElementById('insightTitle').textContent = "防御体系已全满";
-                document.getElementById('insightDesc').textContent = "未检测到防御短板，请关注科技与装备的打磨。";
+                document.getElementById('insightDesc').textContent = "未检测到防御短板，请重点关注科技与史诗装备的打磨。";
             }
 
             const finalP = totalW === 0 ? 0 : Math.floor(totalS / totalW);
@@ -287,10 +310,12 @@
                 const maxed = data[cat].filter(i => i.isMaxed);
 
                 let html = '';
-                // 渲染未满项目 (增加图标)
+                // 渲染未满项目，加入了 onerror 拦截器
                 html += notMaxed.map(item => `
                     <div class="flex gap-3 items-center group">
-                        <img src="${item.icon}" onerror="this.src='${DEFAULT_ICON}'" class="item-icon" alt="${item.name}">
+                        <div class="shrink-0 relative">
+                            <img src="${item.icon}" onerror="handleImgError(this, '${item.name}')" class="item-icon" alt="${item.name}">
+                        </div>
                         <div class="flex-grow min-w-0">
                             <div class="flex justify-between items-end mb-1">
                                 <span class="text-xs font-bold text-slate-200 truncate pr-2">${item.name}</span>
@@ -302,7 +327,6 @@
                     </div>
                 `).join('');
 
-                // 渲染已满项目池 (无图极简)
                 if (maxed.length > 0) {
                     html += `
                     <div class="mt-2 pt-3 border-t border-slate-700/50">
@@ -312,7 +336,7 @@
                         </div>
                     </div>`;
                 }
-                if (html === '') html = `<div class="text-slate-600 text-xs text-center py-6">无数据或全部忽略</div>`;
+                if (html === '') html = `<div class="text-slate-600 text-xs text-center py-6">无数据或全部过滤</div>`;
                 list.innerHTML = html;
             });
         }
