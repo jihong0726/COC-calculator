@@ -1,301 +1,55 @@
-<!DOCTYPE html>
-<html lang="zh-Hans" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COC 全景指挥舱 Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // 配置 Tailwind 的扩展颜色，让它更符合 COC 的风格
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        coco: {
-                            bg: '#0f172a',    // 深色背景
-                            card: '#1e293b',  // 卡片背景
-                            accent: '#3b82f6',// 强调蓝
-                            purple: '#8b5cf6',// 核心防御紫
-                            green: '#22c55e', // 资源绿
-                            orange: '#f97316',// 陷阱橙
-                            red: '#ef4444',   // 警告红
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            /* 自定义进度条样式 */
-            .progress-track {
-                @apply h-3 bg-slate-700/50 rounded-full overflow-hidden;
-            }
-            .progress-fill {
-                @apply h-full rounded-full transition-all duration-1000 ease-out;
-            }
-        }
-        body { background-color: theme('colors.coco.bg'); }
-    </style>
-</head>
-<body class="text-slate-200 p-4 md:p-8 font-sans">
-
-    <div class="max-w-7xl mx-auto">
-        
-        <header class="mb-8 flex flex-col md:flex-row items-start md:items-center justify-between">
-            <div>
-                <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                    COC 账号全景指挥舱
-                    <span class="text-coco-accent">Dashboard</span>
-                </h1>
-                <p class="text-slate-400 mt-2">
-                    玩家 Tag: <span class="font-mono text-white bg-slate-800 px-2 py-1 rounded">#GCLU0Q80R</span> (示例)
-                    | 当前目标: <span class="text-coco-accent font-bold">TH16 满防</span>
-                </p>
-            </div>
-            </header>
-
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-            <div class="lg:col-span-4 bg-coco-card rounded-2xl shadow-2xl p-6 border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-coco-accent/20 blur-[60px] rounded-full"></div>
-                
-                <h2 class="text-xl font-bold text-white mb-6">TH16 综合完成度</h2>
-                <div class="relative w-full max-w-[280px] mx-auto aspect-square">
-                    <canvas id="overallChart"></canvas>
-                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span class="text-5xl font-black text-white leading-none">82%</span>
-                        <span class="text-sm text-slate-400 mt-2 font-medium">综合评分</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-purple shadow-lg flex flex-col justify-center">
-                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">防御短板</div>
-                    <div class="text-2xl font-bold text-white">防空火箭 (Air Def)</div>
-                    <div class="mt-3 flex items-center text-sm">
-                        <span class="flex w-2 h-2 rounded-full bg-red-500 mr-2"></span>
-                        <span class="text-red-400">落后 TH16 标准 2 级</span>
-                    </div>
-                </div>
-                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-green shadow-lg flex flex-col justify-center">
-                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">资源与科技</div>
-                    <div class="text-2xl font-bold text-white">已达标 (Maxed)</div>
-                    <div class="mt-3 text-sm text-slate-400">
-                        兵营、金水罐已满级
-                    </div>
-                </div>
-                <div class="bg-coco-card rounded-2xl p-6 border-t-4 border-coco-orange shadow-lg flex flex-col justify-center">
-                    <div class="text-slate-400 text-sm font-medium uppercase tracking-wider mb-2">预计满防时间</div>
-                    <div class="text-2xl font-bold text-white">≈ 2 个月</div>
-                    <div class="mt-3 text-sm text-slate-400">
-                        假设 6 工人不间断工作
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <h2 class="text-2xl font-bold text-white mb-6 flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-coco-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6v12M14 6v12M4 10h16M4 14h16" />
-            </svg>
-            分类进度详情
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-            
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
-                    🛡️ 核心重火力 (Core)
-                </h3>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">天鹰火炮 (Eagle)</span>
-                            <span class="font-mono text-coco-purple">90% (未满)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-purple" style="width: 90%"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">投石机 (Scattershot)</span>
-                            <span class="font-mono text-coco-purple">85% (未满)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-purple" style="width: 85%"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">地狱塔 (Inferno)</span>
-                            <span class="font-mono text-coco-purple font-bold">100% (已满)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-purple-400/30" style="width: 100%"></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
+<div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
+                <h3 class="text-lg font-bold text-white mb-5 flex items-center">
                     🏹 常规防御 (Standard)
                 </h3>
-                <div class="space-y-4">
+                <div class="space-y-6"> <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-slate-300 font-medium">防空火箭 (Air Def)</span>
+                            <span class="font-mono text-red-400">70% (严重滞后)</span>
+                        </div>
+                        <div class="progress-track mb-2"><div class="progress-fill bg-red-500" style="width: 70%"></div></div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-700 text-slate-300 border border-slate-600">
+                                Lv12 × 1
+                            </span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-red-500/20 text-red-400 border border-red-500/30">
+                                Lv10 × 3
+                            </span>
+                        </div>
+                    </div>
+
                     <div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">防空火箭 (Air Def)</span>
-                            <span class="font-mono text-coco-accent">70% (严重滞后)</span>
+                            <span class="text-slate-300 font-medium">箭塔 (Archer Tower)</span>
+                            <span class="font-mono text-coco-accent">88%</span>
                         </div>
-                        <div class="progress-track"><div class="progress-fill bg-red-500" style="width: 70%"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">箭塔 (Archer Tower)</span>
-                            <span class="font-mono text-coco-accent">88% (未满)</span>
+                        <div class="progress-track mb-2"><div class="progress-fill bg-coco-accent" style="width: 88%"></div></div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                Lv21(满) × 4
+                            </span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-700 text-slate-300 border border-slate-600">
+                                Lv20 × 2
+                            </span>
+                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                Lv18 × 2
+                            </span>
                         </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-accent" style="width: 88%"></div></div>
                     </div>
+
                      <div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">电塔 (Tesla)</span>
-                            <span class="font-mono text-coco-accent">100% (已满)</span>
+                            <span class="text-slate-300 font-medium">电塔 (Tesla)</span>
+                            <span class="font-mono text-slate-500">100% (已满)</span>
                         </div>
-                        <div class="progress-track"><div class="progress-fill bg-blue-400/30" style="width: 100%"></div></div>
+                        <div class="progress-track mb-2"><div class="progress-fill bg-slate-600/50" style="width: 100%"></div></div>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
+                                Lv14(满) × 5
+                            </span>
+                        </div>
                     </div>
+
                 </div>
             </div>
-
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 to-emerald-500"></div>
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
-                    💰 资源与军队 (Eco & Army)
-                </h3>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">兵营 (Army Camp)</span>
-                            <span class="font-mono text-coco-green font-bold">100% (已满)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-green" style="width: 100%"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">金矿/水泵 (Collectors)</span>
-                            <span class="font-mono text-coco-green font-bold">100% (已满)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-green" style="width: 100%"></div></div>
-                    </div>
-                     <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">储金/水罐 (Storages)</span>
-                            <span class="font-mono text-coco-green font-bold">100% (已满)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-green" style="width: 100%"></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-coco-card rounded-2xl p-5 shadow-lg border border-slate-700/50 relative overflow-hidden">
-                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-yellow-500"></div>
-                <h3 class="text-lg font-bold text-white mb-4 flex items-center">
-                    💣 陷阱与其它 (Traps/Misc)
-                </h3>
-                <div class="space-y-4">
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">巨型炸弹 (Giant Bomb)</span>
-                            <span class="font-mono text-coco-orange">60% (滞后)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-orange" style="width: 60%"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">搜空地雷 (SAM)</span>
-                            <span class="font-mono text-coco-orange">50% (严重滞后)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-red-500" style="width: 50%"></div></div>
-                    </div>
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-slate-300">城墙总体 (Walls)</span>
-                            <span class="font-mono text-coco-orange">45% (路漫漫)</span>
-                        </div>
-                        <div class="progress-track"><div class="progress-fill bg-coco-orange" style="width: 45%"></div></div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="bg-coco-card rounded-2xl p-6 border border-slate-700/50 shadow-lg">
-            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
-                🤖 智能诊断建议 (Smart Insights)
-            </h2>
-            <div class="space-y-3">
-                <div class="bg-red-950/30 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <div>
-                        <p class="text-red-200 font-bold">防空能力严重不足！</p>
-                        <p class="text-red-300/80 text-sm mt-1">你的【防空火箭】和【搜空地雷】平均等级远低于 TH16 标准。建议作为最高优先级升级，否则部落战极易被空军流派三星。</p>
-                    </div>
-                </div>
-                <div class="bg-yellow-950/30 border-l-4 border-yellow-500 p-4 rounded-r-lg flex items-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div>
-                        <p class="text-yellow-200 font-bold">升级策略建议</p>
-                        <p class="text-yellow-300/80 text-sm mt-1">核心防御（天鹰/投石）即将满级。下一个长工期建议安排给【防空火箭】。利用升级期间的空余资源刷【城墙】和补齐【陷阱】。</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <footer class="mt-8 text-center text-slate-500 text-sm">
-            © 2024 COC Dashboard Prototype. UI Design by CareerAI.
-        </footer>
-
-    </div>
-
-    <script>
-        // 初始化 Chart.js 环形图
-        const ctx = document.getElementById('overallChart').getContext('2d');
-        // 假数据：82% 完成
-        const overallPercentage = 82; 
-        
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['已完成', '未完成'],
-                datasets: [{
-                    data: [overallPercentage, 100 - overallPercentage],
-                    backgroundColor: [
-                        '#3b82f6', // 完成部分的颜色 (Tailwind blue-500)
-                        '#1e293b'  // 未完成部分的颜色 (Tailwind slate-800)
-                    ],
-                    borderWidth: 0,
-                    borderRadius: 10, // 圆角效果
-                    cutout: '80%'     // 中间镂空的大小
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }, // 隐藏图例
-                    tooltip: { enabled: false } // 隐藏提示框
-                },
-                animation: {
-                    animateRotate: true,
-                    animateScale: true,
-                    duration: 2000, // 动效时长
-                    easing: 'easeOutQuart'
-                }
-            }
-        });
-    </script>
-</body>
-</html>
